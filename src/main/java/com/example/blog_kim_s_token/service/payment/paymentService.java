@@ -1,5 +1,6 @@
 package com.example.blog_kim_s_token.service.payment;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,14 +37,21 @@ import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class paymentService {
+    private RestTemplate restTemplate=new RestTemplate();
+    private HttpHeaders headers=new HttpHeaders();
+    private JSONObject body=new JSONObject();
 
     @Autowired
     private reservationService resevationService;
@@ -285,6 +293,7 @@ public class paymentService {
         System.out.println("confrimSettle");
         try {
             String outStatCd=reseponseSettleDto.getOutStatCd();
+            String aesprice=reseponseSettleDto.getTrdAmt();
             byte[] aesCipherRaw=aes256.decodeBase64(reseponseSettleDto.getTrdAmt());
             String trdAmt =new String(aes256.aes256DecryptEcb(aesCipherRaw),"UTF-8");
             reseponseSettleDto.setTrdAmt(trdAmt);
@@ -300,11 +309,34 @@ public class paymentService {
                 reseponseSettleDto.setVtlAcntNo(new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8"));
                 insertVbank(reseponseSettleDto);
             }
+            JSONObject body2=new JSONObject();
+            JSONObject body3=new JSONObject();
+            JSONObject body4=new JSONObject();
+
+            String pktHash=requestcancleString(reseponseSettleDto.getTrdNo(),"500", reseponseSettleDto.getMchtId());
+            body3.put("mchtId", reseponseSettleDto.getMchtId());
+            body3.put("ver", "0A17");
+            body3.put("method", "CA");
+            body3.put("bizType", "C0");
+            body3.put("encCd", "23");
+            body3.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
+            body3.put("trdDt", "20210914");
+            body3.put("trdTm", "200000");
+            body4.put("pktHash", sha256.encrypt(pktHash));
+            body4.put("orgTrdNo", reseponseSettleDto.getTrdNo());
+            body4.put("crcCd", "KRW");
+            body4.put("cnclAmt",aesprice );
+            body.put("params", body3);
+            body.put("data", body4);
+            cancle();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("confrimSettle error"+e.getMessage());
             throw new RuntimeException("결제 검증에 실패했습니다");
         }
+    }
+    private String requestcancleString(String mchtTrdNo,String price,String mchtId) {
+        return  String.format("%s%s%s%s%s%s","20210914","200000",mchtId,mchtTrdNo,price,"ST1009281328226982205");
     }
     private void checkDetails(reseponseSettleDto reseponseSettleDto,String email) {
         System.out.println("checkDetails");
@@ -356,6 +388,25 @@ public class paymentService {
             e.printStackTrace();
             System.out.println("insertVbank error"+e.getMessage());
             throw new RuntimeException("가상 계좌 정보 저장 실패");
+        }
+    }
+    public void cancle() {
+        System.out.println("cancle");
+        try {
+            headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+            headers.add(HttpHeaders.ACCEPT_CHARSET, StandardCharsets.UTF_8.name());
+    
+            HttpEntity<JSONObject>entity=new HttpEntity<>(body,headers);
+            System.out.println(entity.getBody()+" 요청정보"+entity.getHeaders());
+            JSONObject respone= restTemplate.postForObject("https://tbgw.settlebank.co.kr/spay/APICancel.do",entity,JSONObject.class);
+            System.out.println(respone+" 취소결과");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("requestToKakao error "+ e.getMessage());
+            throw new RuntimeException("카카오 통신 실패");
+        }finally{
+            body.clear();
+            headers.clear();
         }
     }
   
