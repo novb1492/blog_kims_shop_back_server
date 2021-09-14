@@ -13,17 +13,12 @@ import java.util.Map;
 import com.amazonaws.services.managedblockchain.model.IllegalActionException;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.enums.reservationEnums;
-
-import com.example.blog_kim_s_token.model.payment.paidDto;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
-
-
 import com.example.blog_kim_s_token.model.reservation.*;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.payment.paymentService;
-
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -389,41 +384,10 @@ public class reservationService {
             }
         return array;
     }
-    public void deleteReservation(List<Integer> idArray) {
-        System.out.println("deleteReservation");
-        //테스트계정 한계로인해 일반결제만 제대로 다룰 수 있다 
-        List<reservationAndPriceInter>reservationAndPriceInters=new ArrayList<>();
-        for(int i: idArray){
-            System.out.println(i+"deleteReservation");
-            reservationAndPriceInters.add(reservationDao.findByPaymentidJoinPriceNative(i).orElseThrow(()->new RuntimeException("품목 조회 실패")));
-        }
-        for(reservationAndPriceInter r:reservationAndPriceInters){
-            confrimCancle(r.getDate_and_time(), r.getEmail());
-            String status=r.getStatus();
-            String paymentid=r.getPayment_id();
-            int price=r.getPrice();
-            reservationDao.deleteById(r.getId());
-            if(status.equals(aboutPayEnums.statusReady.getString())){
-                System.out.println("가상계좌 입금전 환불 시도");
-               
-            }else if(status.equals(aboutPayEnums.statusPaid.getString())){
-                System.out.println("입금후 환불시도");
-                paidDto paidDto=paymentService.selectPaidProduct(paymentid);
-                int originalPaidPrice=paidDto.getTotalPrice();
-                paymentService.updatePaidProductForCancle(paymentid,price);
-                if(paidDto.getUsedKind().equals(aboutPayEnums.kakaoPay.getString())){
-                    System.out.println("카카오페이 환불 시도");
-                    paymentService.requestCancleToKakaoPay(paidDto.getPaymentId(),price);
-                    return;
-                }else{
-                    System.out.println("아임포트 환불");
-                    
-                }
-            }
-        }
+   
         
   
-    }
+    
     private void confrimCancle(Timestamp dateAndTime,String remail) {
         System.out.println("confrimCancle");
         String messege=null;

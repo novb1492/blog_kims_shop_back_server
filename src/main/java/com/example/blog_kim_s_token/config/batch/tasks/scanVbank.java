@@ -22,13 +22,13 @@ public class scanVbank implements Tasklet  {
 
     public scanVbank(vbankDao vbankDao){
         this.vbankDao=vbankDao;
-    }
+    }*/
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
        System.out.println("scanVbank execute");
-       vbankDao.innerfind(Timestamp.valueOf(LocalDateTime.now()));
+
         return RepeatStatus.FINISHED;
-    }*/
+    }
     
 }

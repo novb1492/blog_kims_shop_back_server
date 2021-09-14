@@ -248,7 +248,7 @@ public class kakaoService {
             nomalPayment.setStatus(status);
             nomalPayment.setUsedKind(usedKind);
             nomalPayment.setName(name);
-            paymentService.insertPayment(nomalPayment,totalPrice);
+            //paymentService.insertPayment(nomalPayment,totalPrice);
             if(kind.equals(aboutPayEnums.reservation.getString())){
                 System.out.println("예약 상품 결제");
                 resevationService.doReservation(email,name, paymentid, itemArray, other,timesOrSize,status,usedKind);

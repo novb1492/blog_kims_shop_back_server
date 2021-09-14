@@ -1,6 +1,8 @@
 package com.example.blog_kim_s_token.service.payment;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -11,15 +13,10 @@ import java.util.List;
 import java.util.Map;
 
 
-import javax.servlet.http.HttpServletRequest;
 
-import com.example.blog_kim_s_token.config.security;
-import com.example.blog_kim_s_token.customException.failBuyException;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.getVankDateDto;
-import com.example.blog_kim_s_token.model.payment.paidDao;
-import com.example.blog_kim_s_token.model.payment.paidDto;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.payment.tryCanclePayDto;
 import com.example.blog_kim_s_token.model.product.productDto;
@@ -30,10 +27,12 @@ import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
-import com.example.blog_kim_s_token.service.payment.iamPort.nomalPayment;
-import com.example.blog_kim_s_token.service.payment.iamPort.vbankPayment;
+import com.example.blog_kim_s_token.service.payment.model.card.cardDao;
+import com.example.blog_kim_s_token.service.payment.model.card.cardDto;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDao;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
+import com.example.blog_kim_s_token.service.payment.model.vbank.insertvbankDto;
+import com.example.blog_kim_s_token.service.payment.model.vbank.vbankDao;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +46,6 @@ import org.springframework.util.MultiValueMap;
 @Service
 public class paymentService {
 
-    @Autowired
-    private paidDao paidDao;
     @Autowired
     private reservationService resevationService;
     @Autowired
@@ -67,43 +64,10 @@ public class paymentService {
     private userService userService;
     @Autowired
     private tempPaidDao tempPaidDao;
-
-
-
-    public paidDto selectPaidProduct(String paymentId) {
-        return paidDao.findByPaymentId(paymentId).orElseThrow(()->new RuntimeException("입금확인을 찾을 수없습니다"+paymentId));
-    }
-    public void insertPayment(nomalPayment nomalPayment,userDto userDto,int totalPrice) {
-        System.out.println("insertPayment");
-        paidDto dto=paidDto.builder().email(userDto.getEmail())
-                                    .kind(nomalPayment.getKind())
-                                    .name(userDto.getName())
-                                    .payMethod(nomalPayment.getPayMethod())
-                                    .paymentId(nomalPayment.getPaymentid())
-                                    .status(nomalPayment.getStatus())
-                                    .usedKind(nomalPayment.getUsedKind())
-                                    .totalPrice(totalPrice)
-                                    .build();
-                                    paidDao.save(dto);
-                                    System.out.println("결제테이블 저장 완료");
-
-    }
-    public void insertPayment(nomalPayment nomalPayment,int totalPrice) {
-        System.out.println("insertPayment");
-        paidDto dto=paidDto.builder().email(nomalPayment.getEmail())
-                                    .kind(nomalPayment.getKind())
-                                    .name(nomalPayment.getName())
-                                    .payMethod(nomalPayment.getPayMethod())
-                                    .paymentId(nomalPayment.getPaymentid())
-                                    .status(nomalPayment.getStatus())
-                                    .usedKind(nomalPayment.getUsedKind())
-                                    .totalPrice(totalPrice)
-                                    .paidmchtTrdNoId(nomalPayment.getMchtTrdNo())
-                                    .build();
-                                    paidDao.save(dto);
-                                    System.out.println("결제테이블 저장 완료");
-
-    }
+    @Autowired
+    private cardDao cardDao;
+    @Autowired
+    private vbankDao vbankDao;
 
     public JSONObject  getVbankDate(getVankDateDto getVankDateDto) {
         System.out.println("getVbankDate");
@@ -174,17 +138,7 @@ public class paymentService {
         return expiredDate;
     }
 
-    public void updatePaidProductForCancle(String paymentid,int minusPrice) {
-        paidDto paidDto=selectPaidProduct(paymentid);
-        int price=paidDto.getTotalPrice();
-        int newPrice=price-minusPrice;
-        if(newPrice==0){
-            System.out.println("취소후 전액환불예정");
-            paidDao.delete(paidDto);
-            return;
-        }
-        paidDto.setTotalPrice(newPrice);
-    }
+
    
     public int minusPrice(int totalPrice,int minusPrice) {
         int newPrice=totalPrice-minusPrice;
@@ -258,7 +212,7 @@ public class paymentService {
             List<Integer> idArray=tryCanclePayDto.getId();
             if(kind.equals(aboutPayEnums.reservation.getString())){
                 System.out.println("예약 상품 취소 시도");
-                resevationService.deleteReservation(idArray);
+              
             }else if(kind.equals(aboutPayEnums.product.getString())){
                 System.out.println("일반 상품 취소 시도");
             }
@@ -277,21 +231,6 @@ public class paymentService {
         body.add("cancel_amount", price);
         body.add("cancel_tax_free_amount",0);
         kakaoService.cancleKakaopay(body);
-    }
-    public Map<String,Object> getVankInforInDb(paidDto paidDto) {
-        System.out.println("getVankInforInDb");
-        try {
-            String[] splitVankInfor=paidDto.getUsedKind().split(" ");
-            Map<String,Object>map=new HashMap<>();
-            map.put("refund_holder",splitVankInfor[2]);
-            map.put("refund_bank",splitVankInfor[1] );
-            map.put("refund_account",splitVankInfor[3] );
-            return map;
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("getVankInforInDb errpr"+e.getMessage());
-            throw new RuntimeException("가상계좌 정보 추출에 실패했습니다");
-        }
     }
     public JSONObject makeTohash(getHashInfor getHashInfor) {
         System.out.println("makeTohash");
@@ -350,36 +289,61 @@ public class paymentService {
             userDto userDto=userService.sendUserDto();
             if(outStatCd.equals("0021")){
                 System.out.println("일반 결제 상품입니다");
-                /*nomalPayment nomalPayment=new nomalPayment();
-                nomalPayment.setEmail(userDto.getEmail());
-                nomalPayment.setKind(aboutPayEnums.reservation.getString());
-                nomalPayment.setName(userDto.getName());
-                nomalPayment.setPayMethod(reseponseSettleDto.getMethod());
-                nomalPayment.setStatus(aboutPayEnums.statusPaid.getString());
-                nomalPayment.setUsedKind(reseponseSettleDto.getFnNm());
-                nomalPayment.setMchtTrdNo(reseponseSettleDto.getMchtTrdNo());
-                nomalPayment.setPaymentid(reseponseSettleDto.getTrdNo());
-                insertPayment(nomalPayment,Integer.parseInt(trdAmt));*/
+                insertPaid(reseponseSettleDto);
+               
             }else if(outStatCd.equals("0051")){
                 System.out.println("가상계좌 채번완료");
                 byte[] aesCipherRaw2=aes256.decodeBase64(reseponseSettleDto.getVtlAcntNo());
-                String vtlAcntNo =new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8");
-                vbankPayment vbankPayment=new vbankPayment();
-                vbankPayment.setEmail(userDto.getEmail());
-                vbankPayment.setBank(reseponseSettleDto.getFnNm());
-                vbankPayment.setBankCode(reseponseSettleDto.getFnCd());
-                vbankPayment.setEndDate(reseponseSettleDto.getExpireDt());
-                vbankPayment.setName(userDto.getName());
-                vbankPayment.setVbankNum(vtlAcntNo);
-                vbankPayment.setPaymentid(reseponseSettleDto.getTrdNo());
-                vbankPayment.setMerchantUid(reseponseSettleDto.getMchtTrdNo());
-              
-         
+                reseponseSettleDto.setVtlAcntNo(new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8"));
+                insertVbank(reseponseSettleDto);
             }
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("confrimSettle error"+e.getMessage());
             throw new RuntimeException("결제 검증에 실패했습니다");
+        }
+    }
+    private void insertPaid(reseponseSettleDto reseponseSettleDto) {
+        System.out.println("insertPaid");
+        try {
+            cardDto dto=cardDto.builder()
+                                .cfnNm(reseponseSettleDto.getFnNm())
+                                .cmchtId(reseponseSettleDto.getMchtId())
+                                .cmchtTrdNo(reseponseSettleDto.getMchtTrdNo())
+                                .cmethod(reseponseSettleDto.getMethod())
+                                .ctrdAmt(reseponseSettleDto.getTrdAmt())
+                                .ctrdNo(reseponseSettleDto.getTrdNo())
+                                .build();
+                                cardDao.save(dto);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void insertVbank(reseponseSettleDto reseponseSettleDto) {
+        System.out.println("insertVbank");
+
+        SimpleDateFormat newDtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat dtFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        try {
+            String  expire = newDtFormat.format(dtFormat.parse(reseponseSettleDto.getExpireDt()));
+            insertvbankDto dto=insertvbankDto.builder()
+                                .vexpireDt(Timestamp.valueOf(expire))
+                                .vfnCd(reseponseSettleDto.getFnCd())
+                                .vfnNm(reseponseSettleDto.getFnNm())
+                                .vmchtId(reseponseSettleDto.getMchtId())
+                                .vmchtTrdNo(reseponseSettleDto.getMchtTrdNo())
+                                .vmethod(reseponseSettleDto.getMethod())
+                                .vtlAcntNo(reseponseSettleDto.getVtlAcntNo())
+                                .vtrdAmt(reseponseSettleDto.getTrdAmt())
+                                .vtrdNo(reseponseSettleDto.getTrdNo())
+                                .build();
+            vbankDao.save(dto);
+                                
+                                
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("insertVbank error"+e.getMessage());
+            throw new RuntimeException("가상 계좌 정보 저장 실패");
         }
     }
   

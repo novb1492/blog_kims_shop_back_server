@@ -22,40 +22,19 @@ import lombok.NoArgsConstructor;
 @Data
 @Table(name = "vbank")
 @Entity
-public class vbankDto {
+public class insertvbankDto {
     
     @Id
     @Column(name="vid",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int vid;
 
-    @Column(name = "vorgTrdNo",nullable = false,unique = true)
-    private String vorgTrdNo;
+    @Column(name = "vmchtId",nullable = false)
+    private String vmchtId;
 
-    @Column(name = "vemail",nullable = false)
-    private String vemail;
-
-    @Column(name = "vname",nullable = false)
-    private String vname;
-
-    @Column(name = "vbanktrdAmt",nullable = false)
-    private int vbanktrdAmt;
-
-    @Column(name = "vstatus",nullable = false)
-    private String vstatus;
-
-    @Column(name = "bank",nullable = false)
-    private String bank;
-
-    @Column(name = "bankCode",nullable = false)
-    private String bankCode;
-
-    @Column(name = "vkind",nullable = false)
-    private String vkind;
-
-    @Column(name = "bankNum",nullable = false)
-    private String bankNum;
-
+    
+    @Column(name = "vmethod",nullable = false)
+    private String vmethod;
 
     @Column(name = "vmchtTrdNo",nullable = false)
     private String vmchtTrdNo;
@@ -63,8 +42,20 @@ public class vbankDto {
     @Column(name = "vtrdNo",nullable = false)
     private String vtrdNo;
 
-    @Column(name = "vendDate",nullable = false)
-    private Timestamp vendDate; 
+    @Column(name = "vtrdAmt",nullable = false)
+    private String vtrdAmt;
+
+    @Column(name = "vtlAcntNo",nullable = false)
+    private String vtlAcntNo;
+
+    @Column(name = "vfnNm",nullable = false)
+    private String vfnNm;
+
+    @Column(name = "vfnCd",nullable = false)
+    private String vfnCd; 
+
+    @Column(name = "vexpireDt",nullable = false)
+    private Timestamp vexpireDt;
 
     @Column(name = "created")
     @CreationTimestamp
