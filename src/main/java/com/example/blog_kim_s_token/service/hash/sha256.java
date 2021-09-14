@@ -11,13 +11,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class sha256 {
 
-    public String encrypt(getHashInfor getHashInfor){
+    public String encrypt(String text){
         try {
              //일반 가상계좌 "%s%s%s%s%s%s%s","nx_mid_il","vbank","TEST784512","20210913","132000","500","ST1009281328226982205"
            //일반nxca_jt_il ,card
            //010가상계죄 nxva_sb_il vbank010
-          
-            String text=String.format("%s%s%s%s%s%s%s",getHashInfor.getMchtId(),getHashInfor.getMethod(),getHashInfor.getMchtTrdNo(),getHashInfor.getRequestDate(),getHashInfor.getRequestTime(),getHashInfor.getTotalPrice(),"ST1009281328226982205");
+
             StringBuffer sb = new StringBuffer();
             MessageDigest sh = MessageDigest.getInstance("SHA-256");
             if (text != null) {

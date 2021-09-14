@@ -243,7 +243,7 @@ public class paymentService {
             getHashInfor.setMchtTrdNo(mchtTrdNo);
             getHashInfor.setRequestDate("20210913");
             getHashInfor.setRequestTime("132000");
-            String pktHash=sha256.encrypt(getHashInfor);
+            String pktHash=sha256.encrypt(requestPayString(getHashInfor));
             String hashPrice=aes256.encrypt(price);
             String mchtCustId=aes256.encrypt(email);
             response.put("mchtCustId", mchtCustId);
@@ -264,6 +264,9 @@ public class paymentService {
             System.out.println("makeTohash error"+e.getMessage());
             throw new RuntimeException("구매정보 해시화 실패");
         }
+    }
+    private String requestPayString(getHashInfor getHashInfor) {
+        return  String.format("%s%s%s%s%s%s%s",getHashInfor.getMchtId(),getHashInfor.getMethod(),getHashInfor.getMchtTrdNo(),getHashInfor.getRequestDate(),getHashInfor.getRequestTime(),getHashInfor.getTotalPrice(),"ST1009281328226982205");
     }
     public void okSettle(reseponseSettleDto reseponseSettleDto ) {
         System.out.println("okSettle");
