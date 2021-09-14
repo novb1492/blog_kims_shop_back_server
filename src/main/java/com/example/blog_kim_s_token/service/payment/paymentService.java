@@ -1,6 +1,5 @@
 package com.example.blog_kim_s_token.service.payment;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -293,7 +292,6 @@ public class paymentService {
         System.out.println("confrimSettle");
         try {
             String outStatCd=reseponseSettleDto.getOutStatCd();
-            String aesprice=reseponseSettleDto.getTrdAmt();
             byte[] aesCipherRaw=aes256.decodeBase64(reseponseSettleDto.getTrdAmt());
             String trdAmt =new String(aes256.aes256DecryptEcb(aesCipherRaw),"UTF-8");
             reseponseSettleDto.setTrdAmt(trdAmt);
@@ -309,11 +307,11 @@ public class paymentService {
                 reseponseSettleDto.setVtlAcntNo(new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8"));
                 insertVbank(reseponseSettleDto);
             }
-            JSONObject body2=new JSONObject();
             JSONObject body3=new JSONObject();
             JSONObject body4=new JSONObject();
 
-            String pktHash=requestcancleString(reseponseSettleDto.getTrdNo(),"500", reseponseSettleDto.getMchtId());
+            String pktHash=requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId());
+            System.out.println(reseponseSettleDto.getTrdAmt());
             body3.put("mchtId", reseponseSettleDto.getMchtId());
             body3.put("ver", "0A17");
             body3.put("method", "CA");
@@ -321,11 +319,11 @@ public class paymentService {
             body3.put("encCd", "23");
             body3.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
             body3.put("trdDt", "20210914");
-            body3.put("trdTm", "200000");
+            body3.put("trdTm", "210500");
             body4.put("pktHash", sha256.encrypt(pktHash));
             body4.put("orgTrdNo", reseponseSettleDto.getTrdNo());
             body4.put("crcCd", "KRW");
-            body4.put("cnclAmt",aesprice );
+            body4.put("cnclAmt", aes256.encrypt(reseponseSettleDto.getTrdAmt()));
             body.put("params", body3);
             body.put("data", body4);
             cancle();
@@ -336,7 +334,7 @@ public class paymentService {
         }
     }
     private String requestcancleString(String mchtTrdNo,String price,String mchtId) {
-        return  String.format("%s%s%s%s%s%s","20210914","200000",mchtId,mchtTrdNo,price,"ST1009281328226982205");
+        return  String.format("%s%s%s%s%s%s","20210914","210500",mchtId,mchtTrdNo,price,"ST1009281328226982205");
     }
     private void checkDetails(reseponseSettleDto reseponseSettleDto,String email) {
         System.out.println("checkDetails");
@@ -394,7 +392,7 @@ public class paymentService {
         System.out.println("cancle");
         try {
             headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-            headers.add(HttpHeaders.ACCEPT_CHARSET, StandardCharsets.UTF_8.name());
+            headers.set("charset", "UTF-8");
     
             HttpEntity<JSONObject>entity=new HttpEntity<>(body,headers);
             System.out.println(entity.getBody()+" 요청정보"+entity.getHeaders());
