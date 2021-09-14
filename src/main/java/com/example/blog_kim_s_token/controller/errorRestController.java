@@ -5,8 +5,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.example.blog_kim_s_token.customException.failBuyException;
@@ -14,9 +12,8 @@ import com.example.blog_kim_s_token.customException.failKakaoPay;
 import com.example.blog_kim_s_token.jwt.jwtService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
-import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaopayService;
+import com.example.blog_kim_s_token.service.payment.paymentService;
 import com.nimbusds.jose.shaded.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -32,6 +29,8 @@ public class errorRestController {
     private jwtService jwtService;
     @Autowired
     private kakaoService kakaoService;
+    @Autowired
+    private paymentService paymentService;
 
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -81,5 +80,11 @@ public class errorRestController {
         body.add("cancel_tax_free_amount",0);
         kakaoService.cancleKakaopay(body);
         return utillService.makeJson(false, failKakaoPay.getMessage());
+    }
+    @ExceptionHandler(failBuyException.class)
+    public JSONObject failBuyException(failBuyException failBuyException,HttpServletResponse response) {
+        System.out.println("failBuyException");
+        paymentService.cancle(failBuyException.getReseponseSettleDtod());
+        return utillService.makeJson(false, failBuyException.getMessage());
     }
 }

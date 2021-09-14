@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.amazonaws.services.managedblockchain.model.IllegalActionException;
+import com.example.blog_kim_s_token.customException.failBuyException;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.getVankDateDto;
@@ -311,12 +312,12 @@ public class paymentService {
                 reseponseSettleDto.setVtlAcntNo(new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8"));
                 vbankService.insertVbank(reseponseSettleDto);
             }
+            throw new Exception("test");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("confrimSettle error"+e.getMessage());
-            throw new RuntimeException("결제 검증에 실패했습니다");
+            throw new failBuyException("실패했습니다",reseponseSettleDto);
         }
-        cancle(reseponseSettleDto);
     }
     private void checkDetails(reseponseSettleDto reseponseSettleDto,String email) {
         System.out.println("checkDetails");

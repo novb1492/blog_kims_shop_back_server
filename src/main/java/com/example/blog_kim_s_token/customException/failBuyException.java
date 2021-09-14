@@ -4,19 +4,21 @@ package com.example.blog_kim_s_token.customException;
 
 
 
+import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
+
 import org.springframework.dao.DataAccessException;
 
 public class failBuyException extends DataAccessException {
 
 
-    private String paymentid;
+    private reseponseSettleDto reseponseSettleDto;
 
 
-    public failBuyException(String msg,String paymentid ) {
+    public failBuyException(String msg,reseponseSettleDto reseponseSettleDto ) {
         super(msg);
-        this.paymentid=paymentid;
+        this.reseponseSettleDto=reseponseSettleDto;
     }
-    public String getpaymentid() {
-        return this.paymentid;
+    public reseponseSettleDto getReseponseSettleDtod() {
+        return this.reseponseSettleDto;
     }
 }

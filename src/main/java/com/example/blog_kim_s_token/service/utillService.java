@@ -39,7 +39,19 @@ public class utillService {
         String[] spl=timestamp.toString().split(" ");
         String trdDt=spl[0].replace("-","");
         System.out.println(trdDt+" 요일");
-        String trdTm=LocalDateTime.now().getHour()+""+LocalDateTime.now().getMinute()+LocalDateTime.now().getSecond();
+        String min=LocalDateTime.now().getMinute()+"";
+        String second=LocalDateTime.now().getSecond()+"";
+        String hour=LocalDateTime.now().getHour()+"";
+        if(hour.length()<2){
+            hour="0"+hour;
+        }
+        if(min.length()<2){
+            min="0"+min;
+        }
+        if(second.length()<2){
+            second="0"+second;
+        }
+        String trdTm=hour+min+second;
         System.out.println(trdTm+" 요일");
         Map<String,String>map=new HashMap<>();
         map.put("trdDt", trdDt);
