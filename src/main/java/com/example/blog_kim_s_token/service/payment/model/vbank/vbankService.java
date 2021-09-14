@@ -2,8 +2,12 @@ package com.example.blog_kim_s_token.service.payment.model.vbank;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Map;
 
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
+import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.paymentService;
@@ -48,24 +52,31 @@ public class vbankService {
     }
 
     public JSONObject makeBody(reseponseSettleDto reseponseSettleDto) {
-        String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId());
-        System.out.println(reseponseSettleDto.getVtlAcntNo());
-        JSONObject body=new JSONObject();
-        JSONObject params=new JSONObject();
-        JSONObject data=new JSONObject();;
+        try {
+            Map<String,String>map=utillService.getTrdDtTrdTm();
+            String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
+            System.out.println(reseponseSettleDto.getVtlAcntNo());
+            JSONObject body=new JSONObject();
+            JSONObject params=new JSONObject();
+            JSONObject data=new JSONObject();
             params.put("mchtId", reseponseSettleDto.getMchtId());
             params.put("ver", "0A17");
             params.put("method", "VA");
             params.put("bizType", "A2");
             params.put("encCd", "23");
             params.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
-            params.put("trdDt", "20210914");
-            params.put("trdTm", "220000");
+            params.put("trdDt", map.get("trdDt"));
+            params.put("trdTm", map.get("trdTm"));
             data.put("pktHash", sha256.encrypt(pktHash));
             data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
             data.put("vAcntNo", aes256.encrypt(reseponseSettleDto.getVtlAcntNo()));
             body.put("params", params);
             body.put("data", data);
         return body;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+        
     }
 }

@@ -1,6 +1,9 @@
 package com.example.blog_kim_s_token.service.payment.model.card;
 
+import java.util.Map;
+
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
+import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.paymentService;
@@ -14,8 +17,6 @@ public class cardService {
 
     @Autowired
     private paymentService paymentService;
-    @Autowired
-    private sha256 sha256;
     @Autowired
     private cardDao cardDao;
     
@@ -36,7 +37,8 @@ public class cardService {
         }
     }
     public JSONObject makeBody(reseponseSettleDto reseponseSettleDto) {
-        String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId());
+        Map<String,String>map=utillService.getTrdDtTrdTm();
+        String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
         System.out.println(reseponseSettleDto.getTrdAmt());
         JSONObject body=new JSONObject();
         JSONObject params=new JSONObject();
@@ -47,8 +49,8 @@ public class cardService {
         params.put("bizType", "C0");
         params.put("encCd", "23");
         params.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
-        params.put("trdDt", "20210914");
-        params.put("trdTm", "220000");
+        params.put("trdDt", map.get("trdDt"));
+        params.put("trdTm",map.get("trdTm"));
         data.put("pktHash", sha256.encrypt(pktHash));
         data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
         data.put("crcCd", "KRW");

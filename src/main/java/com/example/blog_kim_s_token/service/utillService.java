@@ -6,7 +6,9 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 
@@ -29,6 +31,20 @@ public class utillService {
            return true;
         }
         return false;
+    }
+    public static Map<String,String> getTrdDtTrdTm() {
+        System.out.println("getTrdDtTrdTm");
+        Timestamp timestamp=Timestamp.valueOf(LocalDateTime.now());
+        System.out.println(timestamp+" 시간");
+        String[] spl=timestamp.toString().split(" ");
+        String trdDt=spl[0].replace("-","");
+        System.out.println(trdDt+" 요일");
+        String trdTm=LocalDateTime.now().getHour()+""+LocalDateTime.now().getMinute()+LocalDateTime.now().getSecond();
+        System.out.println(trdTm+" 요일");
+        Map<String,String>map=new HashMap<>();
+        map.put("trdDt", trdDt);
+        map.put("trdTm", trdTm);
+        return map;
     }
     public static boolean compareDate(Timestamp timestamp,LocalDateTime localDateTime) {
         System.out.println("checkDate");

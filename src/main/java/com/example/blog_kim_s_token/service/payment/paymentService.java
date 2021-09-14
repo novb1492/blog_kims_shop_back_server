@@ -248,10 +248,11 @@ public class paymentService {
             System.out.println(kind); 
             String email=SecurityContextHolder.getContext().getAuthentication().getName();
             String price=getHashInfor.getTotalPrice()+"";
+            Map<String,String>map=utillService.getTrdDtTrdTm();
             String mchtTrdNo=kind+utillService.GetRandomNum(10);
             getHashInfor.setMchtTrdNo(mchtTrdNo);
-            getHashInfor.setRequestDate("20210913");
-            getHashInfor.setRequestTime("132000");
+            getHashInfor.setRequestDate(map.get("trdDt"));
+            getHashInfor.setRequestTime(map.get("trdTm"));
             String pktHash=sha256.encrypt(requestPayString(getHashInfor));
             String hashPrice=aes256.encrypt(price);
             String mchtCustId=aes256.encrypt(email);
@@ -340,14 +341,14 @@ public class paymentService {
         }
         requestToSettle(url);
     }
-    public String requestcancleString(String mchtTrdNo,String price,String mchtId) {
+    public String requestcancleString(String mchtTrdNo,String price,String mchtId,String trdDt,String trdTm) {
         String pain=null;
         if(mchtId.equals(aboutPayEnums.vbankmehthod.getString())){
             System.out.println("가상계좌  plain생성");
-            pain=String.format("%s%s%s%s%s%s","20210914","220000",mchtId,mchtTrdNo,"0","ST1009281328226982205"); 
+            pain=String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,"0","ST1009281328226982205"); 
         }else{
             System.out.println("일반 plain생성");
-            pain=String.format("%s%s%s%s%s%s","20210914","220000",mchtId,mchtTrdNo,price,"ST1009281328226982205"); 
+            pain=String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,price,"ST1009281328226982205"); 
         }
         return  pain;
     }
