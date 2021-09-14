@@ -28,6 +28,7 @@ import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.model.card.cardDao;
 import com.example.blog_kim_s_token.service.payment.model.card.cardDto;
+import com.example.blog_kim_s_token.service.payment.model.card.cardService;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDao;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
 import com.example.blog_kim_s_token.service.payment.model.vbank.insertvbankDto;
@@ -74,6 +75,8 @@ public class paymentService {
     private cardDao cardDao;
     @Autowired
     private vbankDao vbankDao;
+    @Autowired
+    private cardService cardService;
 
     public JSONObject  getVbankDate(getVankDateDto getVankDateDto) {
         System.out.println("getVbankDate");
@@ -288,6 +291,7 @@ public class paymentService {
             System.out.println("okSettle error"+e.getMessage());
         }
     }
+    @Transactional(rollbackFor = Exception.class)
     public void confrimSettle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("confrimSettle");
         try {
@@ -299,7 +303,7 @@ public class paymentService {
             checkDetails(reseponseSettleDto,userDto.getEmail());
             if(outStatCd.equals("0021")){
                 System.out.println("일반 결제 상품입니다");
-                insertPaid(reseponseSettleDto);
+                cardService.insertCard(reseponseSettleDto);
                
             }else if(outStatCd.equals("0051")){
                 System.out.println("가상계좌 채번완료");
@@ -307,34 +311,12 @@ public class paymentService {
                 reseponseSettleDto.setVtlAcntNo(new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8"));
                 insertVbank(reseponseSettleDto);
             }
-            JSONObject body3=new JSONObject();
-            JSONObject body4=new JSONObject();
-
-            String pktHash=requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId());
-            System.out.println(reseponseSettleDto.getTrdAmt());
-            body3.put("mchtId", reseponseSettleDto.getMchtId());
-            body3.put("ver", "0A17");
-            body3.put("method", "CA");
-            body3.put("bizType", "C0");
-            body3.put("encCd", "23");
-            body3.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
-            body3.put("trdDt", "20210914");
-            body3.put("trdTm", "210500");
-            body4.put("pktHash", sha256.encrypt(pktHash));
-            body4.put("orgTrdNo", reseponseSettleDto.getTrdNo());
-            body4.put("crcCd", "KRW");
-            body4.put("cnclAmt", aes256.encrypt(reseponseSettleDto.getTrdAmt()));
-            body.put("params", body3);
-            body.put("data", body4);
-            cancle();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("confrimSettle error"+e.getMessage());
             throw new RuntimeException("결제 검증에 실패했습니다");
         }
-    }
-    private String requestcancleString(String mchtTrdNo,String price,String mchtId) {
-        return  String.format("%s%s%s%s%s%s","20210914","210500",mchtId,mchtTrdNo,price,"ST1009281328226982205");
+        cancle(reseponseSettleDto);
     }
     private void checkDetails(reseponseSettleDto reseponseSettleDto,String email) {
         System.out.println("checkDetails");
@@ -343,22 +325,6 @@ public class paymentService {
             System.out.println("이메일이 다름");
         }else if(!tempPaidDto.getTpprice().equals(reseponseSettleDto.getTrdAmt())){
             System.out.println("결제금액이 다릅니다");
-        }
-    }
-    private void insertPaid(reseponseSettleDto reseponseSettleDto) {
-        System.out.println("insertPaid");
-        try {
-            cardDto dto=cardDto.builder()
-                                .cfnNm(reseponseSettleDto.getFnNm())
-                                .cmchtId(reseponseSettleDto.getMchtId())
-                                .cmchtTrdNo(reseponseSettleDto.getMchtTrdNo())
-                                .cmethod(reseponseSettleDto.getMethod())
-                                .ctrdAmt(reseponseSettleDto.getTrdAmt())
-                                .ctrdNo(reseponseSettleDto.getTrdNo())
-                                .build();
-                                cardDao.save(dto);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
     private void insertVbank(reseponseSettleDto reseponseSettleDto) {
@@ -388,25 +354,68 @@ public class paymentService {
             throw new RuntimeException("가상 계좌 정보 저장 실패");
         }
     }
-    public void cancle() {
+    public void cancle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("cancle");
+        String url=null;
+        if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.cardmehtod.getString())){
+            System.out.println("카드결제 환불");
+            this.body=cardService.makeBody(reseponseSettleDto);
+            url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
+        }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
+            System.out.println("가상계좌 환불");
+            String pktHash=requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId());
+            System.out.println(reseponseSettleDto.getVtlAcntNo());
+            JSONObject parmas=new JSONObject();
+            JSONObject data=new JSONObject();
+            parmas.put("mchtId", reseponseSettleDto.getMchtId());
+            parmas.put("ver", "0A17");
+            parmas.put("method", "VA");
+            parmas.put("bizType", "A2");
+            parmas.put("encCd", "23");
+            parmas.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
+            parmas.put("trdDt", "20210914");
+            parmas.put("trdTm", "220000");
+            data.put("pktHash", sha256.encrypt(pktHash));
+            data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
+            data.put("vAcntNo", aes256.encrypt(reseponseSettleDto.getVtlAcntNo()));
+            body.put("params", parmas);
+            body.put("data", data);
+            url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";
+            
+        }
+        requestToSettle(url);
+    }
+    public String requestcancleString(String mchtTrdNo,String price,String mchtId) {
+        String pain=null;
+        if(mchtId.equals(aboutPayEnums.vbankmehthod.getString())){
+            System.out.println("가상계좌  plain생성");
+            pain=String.format("%s%s%s%s%s%s","20210914","220000",mchtId,mchtTrdNo,"0","ST1009281328226982205"); 
+        }else{
+            System.out.println("일반 plain생성");
+            pain=String.format("%s%s%s%s%s%s","20210914","220000",mchtId,mchtTrdNo,price,"ST1009281328226982205"); 
+        }
+        return  pain;
+    }
+    private void requestToSettle(String url) {
+        System.out.println("reuqestToSettle");
         try {
             headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
             headers.set("charset", "UTF-8");
     
             HttpEntity<JSONObject>entity=new HttpEntity<>(body,headers);
             System.out.println(entity.getBody()+" 요청정보"+entity.getHeaders());
-            JSONObject respone= restTemplate.postForObject("https://tbgw.settlebank.co.kr/spay/APICancel.do",entity,JSONObject.class);
-            System.out.println(respone+" 취소결과");
+            JSONObject respone= restTemplate.postForObject(url,entity,JSONObject.class);
+            System.out.println(respone+" 세틀뱅크 통신결과");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("requestToKakao error "+ e.getMessage());
-            throw new RuntimeException("카카오 통신 실패");
+            throw new RuntimeException("세틀뱅크 통신 실패");
         }finally{
             body.clear();
             headers.clear();
         }
     }
+
   
 
 
