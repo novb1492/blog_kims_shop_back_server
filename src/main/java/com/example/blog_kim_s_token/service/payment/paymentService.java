@@ -12,8 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-
+import com.amazonaws.services.managedblockchain.model.IllegalActionException;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.getVankDateDto;
@@ -254,9 +253,9 @@ public class paymentService {
             response.put("trdTm", getHashInfor.getRequestTime());
             response.put("pktHash", pktHash);
             tempPaidDto dto=tempPaidDto.builder()
-                                        .tpEmail(email)
-                                        .tpPaymentid(mchtTrdNo)
-                                        .tpPrice(price)
+                                        .tpemail(email)
+                                        .tpaymentid(mchtTrdNo)
+                                        .tpprice(price)
                                         .build();
                                         tempPaidDao.save(dto);
             return response;
@@ -287,6 +286,7 @@ public class paymentService {
             String trdAmt =new String(aes256.aes256DecryptEcb(aesCipherRaw),"UTF-8");
             reseponseSettleDto.setTrdAmt(trdAmt);
             userDto userDto=userService.sendUserDto();
+            checkDetails(reseponseSettleDto,userDto.getEmail());
             if(outStatCd.equals("0021")){
                 System.out.println("일반 결제 상품입니다");
                 insertPaid(reseponseSettleDto);
@@ -301,6 +301,15 @@ public class paymentService {
             e.printStackTrace();
             System.out.println("confrimSettle error"+e.getMessage());
             throw new RuntimeException("결제 검증에 실패했습니다");
+        }
+    }
+    private void checkDetails(reseponseSettleDto reseponseSettleDto,String email) {
+        System.out.println("checkDetails");
+        tempPaidDto tempPaidDto=tempPaidDao.findByTpaymentid(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalActionException("결제 요청 정보가 없습니다"));
+        if(!tempPaidDto.getTpemail().equals(email)){
+            System.out.println("이메일이 다름");
+        }else if(!tempPaidDto.getTpprice().equals(reseponseSettleDto.getTrdAmt())){
+            System.out.println("결제금액이 다릅니다");
         }
     }
     private void insertPaid(reseponseSettleDto reseponseSettleDto) {

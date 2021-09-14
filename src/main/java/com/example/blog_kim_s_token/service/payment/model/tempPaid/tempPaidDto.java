@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-@Table(name = "temppaid")
+@Table(name = "temporder")
 @Entity
 public class tempPaidDto {
     
@@ -29,14 +29,14 @@ public class tempPaidDto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int tpid;
 
-    @Column(name="tpPaymentId",nullable = false)
-    private String tpPaymentid;
+    @Column(name="tpaymentid",nullable = false)
+    private String tpaymentid;
 
-    @Column(name = "tpEmail",nullable = false)
-    private String tpEmail;
+    @Column(name = "tpemail",nullable = false)
+    private String tpemail;
 
-    @Column(name = "tpPrice",nullable = false)
-    private String tpPrice;
+    @Column(name = "tpprice",nullable = false)
+    private String tpprice;
 
     @Column(name="tpcreated")
     @CreationTimestamp  
