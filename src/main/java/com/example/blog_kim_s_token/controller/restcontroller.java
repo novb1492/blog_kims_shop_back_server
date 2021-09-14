@@ -5,10 +5,6 @@ package com.example.blog_kim_s_token.controller;
 
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -38,17 +34,12 @@ import com.example.blog_kim_s_token.service.priceService;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
-import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaopayService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.tryKakaoPayDto;
 import com.example.blog_kim_s_token.service.ApiServies.naver.naverLoginService;
 import com.example.blog_kim_s_token.service.confrim.confrimService;
 import com.example.blog_kim_s_token.service.fileUpload.fileUploadService;
-import com.example.blog_kim_s_token.service.hash.aes256;
-import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.paymentService;
-
 import com.example.blog_kim_s_token.service.reservation.reservationService;
-import com.example.blog_kim_s_token.service.reservation.tryTempDto;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,8 +60,6 @@ public class restcontroller {
     @Autowired
     private naverLoginService naverLoingService;
     @Autowired
-    private kakaopayService kakaopayService;
-    @Autowired
     private kakaoService kakaoService;
     @Autowired
     private reservationService resevationService;
@@ -82,10 +71,6 @@ public class restcontroller {
     private paymentService paymentService;
     @Autowired
     private boardService boardService;
-    @Autowired
-    private sha256 sha256;
-    @Autowired
-    private aes256 aes256;
     @Autowired
     private reservationService reservationService;
 
@@ -212,12 +197,12 @@ public class restcontroller {
     public void okKakaopay(HttpServletRequest request,HttpSession session,HttpServletResponse response) {
         System.out.println("okKakaopay");
         kakaoService.requestKakaopay(request.getParameter("pg_token"),session);
-        doRedirect(response,"http://localhost:3030/doneKakaoPagevar1.html?nextUrl=showReservationPage.html");
+        doRedirect(response,"https://localhost:8443/doneKakaoPagevar1.html?nextUrl=showReservationPage.html");
     }
     @PostMapping("/api/canclePay")
-    public JSONObject canclePay( @RequestBody tryCanclePayDto tryCanclePayDto,HttpServletRequest request,HttpServletResponse response) {
+    public void canclePay( @RequestBody tryCanclePayDto tryCanclePayDto,HttpServletRequest request,HttpServletResponse response) {
         System.out.println("canclePay"); 
-        return  paymentService.canclePay(tryCanclePayDto);
+   
     }
     @PostMapping("/api/imageUpload")
     public JSONObject imageUpload(@RequestParam("file")MultipartFile multipartFile,HttpServletRequest request,HttpServletResponse response) {
@@ -255,19 +240,19 @@ public class restcontroller {
     public void kakaoLogincallback(HttpServletRequest request,HttpServletResponse response) {
         System.out.println("kakaologin요청");   
         kakaoService.kakaoLogin(request.getParameter("code"),response);
-        doRedirect(response, "http://localhost:3030/kakaoplusOkPage.html");
+        doRedirect(response, "https://localhost:8443/kakaoplusOkPage.html");
     }
     @RequestMapping("/auth/kakaoMoreOkcallback")
     public void kakaoMoreOkcallback(HttpServletRequest request,HttpServletResponse response) {
         System.out.println("kakaoMoreOkcallback"+request.getHeader("REFERER"));
-        doRedirect(response, "http://localhost:3030/kakaoPlusOkDetailPage.html");
+        doRedirect(response, "https://localhost:8443/kakaoPlusOkDetailPage.html");
 
     }
     @RequestMapping("/auth/navercallback")
     public void naverRollback(HttpServletRequest request,HttpServletResponse response) {
         System.out.println("naverlogin요청");
         naverLoingService.LoginNaver(naverLoingService.getNaverToken(request.getParameter("code"), request.getParameter("state")),request,response);
-        doRedirect(response, "http://localhost:3030/doneNaverLogin.html");
+        doRedirect(response, "https://localhost:8443/doneNaverLogin.html");
     }
     @PostMapping("/api/getSha256Hash")
     public JSONObject getSha256Hash(@RequestBody getHashInfor getHashInfor,HttpServletRequest request,HttpServletResponse response) {

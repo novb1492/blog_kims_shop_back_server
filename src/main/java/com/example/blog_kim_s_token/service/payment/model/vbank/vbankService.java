@@ -2,8 +2,6 @@ package com.example.blog_kim_s_token.service.payment.model.vbank;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Map;
 
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;

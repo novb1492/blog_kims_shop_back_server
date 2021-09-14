@@ -41,7 +41,6 @@ public class kakaoService {
     private final String requestMessageUrl="https://kapi.kakao.com/v2/api/talk/memo/default/send";
     private final String getAccessTokenGrandType="authorization_code";
     private final String getRefreshTokenGrandType="refresh_token";
-    private final String kakao="kakao";
     private final String sucUrl="http://localhost:8080/api/okKakaopay";
     private final String cancleUrl="http://localhost:8080/auth/cancleKakaopay";
     private final String failUrl="http://localhost:8080/auth/failKakaopay";
@@ -70,10 +69,6 @@ public class kakaoService {
     private kakaoTokenDao kakaoTokenDao;
     @Autowired
     private kakaoLoginservice kakaoLoginservice;
-    @Autowired
-    private kakaoMessageService kakaoMessageService;
-    @Autowired
-    private kakaopayService kakaopayService;
     @Autowired
     private userService userService;
     @Autowired

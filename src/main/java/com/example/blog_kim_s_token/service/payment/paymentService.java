@@ -1,8 +1,6 @@
 package com.example.blog_kim_s_token.service.payment;
 
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -11,14 +9,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import com.amazonaws.services.managedblockchain.model.IllegalActionException;
 import com.example.blog_kim_s_token.customException.failBuyException;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.getVankDateDto;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
-import com.example.blog_kim_s_token.model.payment.tryCanclePayDto;
 import com.example.blog_kim_s_token.model.product.productDto;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.priceService;
@@ -27,13 +23,9 @@ import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
-import com.example.blog_kim_s_token.service.payment.model.card.cardDao;
-import com.example.blog_kim_s_token.service.payment.model.card.cardDto;
 import com.example.blog_kim_s_token.service.payment.model.card.cardService;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDao;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
-import com.example.blog_kim_s_token.service.payment.model.vbank.insertvbankDto;
-import com.example.blog_kim_s_token.service.payment.model.vbank.vbankDao;
 import com.example.blog_kim_s_token.service.payment.model.vbank.vbankService;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
@@ -71,8 +63,6 @@ public class paymentService {
     private userService userService;
     @Autowired
     private tempPaidDao tempPaidDao;
-    @Autowired
-    private vbankDao vbankDao;
     @Autowired
     private cardService cardService;
     @Autowired
@@ -212,25 +202,6 @@ public class paymentService {
            }
         }
         throw new RuntimeException(messege);
-    }
-    @Transactional(rollbackFor = Exception.class)
-    public JSONObject canclePay(tryCanclePayDto tryCanclePayDto ) {
-        System.out.println("canclePay");
-        try {
-            String kind=aboutPayEnums.valueOf(tryCanclePayDto.getKind()).getString();
-            List<Integer> idArray=tryCanclePayDto.getId();
-            if(kind.equals(aboutPayEnums.reservation.getString())){
-                System.out.println("예약 상품 취소 시도");
-              
-            }else if(kind.equals(aboutPayEnums.product.getString())){
-                System.out.println("일반 상품 취소 시도");
-            }
-            return utillService.makeJson(true, "완료되었습니다");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("canclePay error"+ e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        }
     }
     public void requestCancleToKakaoPay(String tid,int price) {
         System.out.println("requestCancleToKakaoPay");
