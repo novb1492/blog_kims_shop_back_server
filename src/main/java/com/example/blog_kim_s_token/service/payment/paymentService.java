@@ -33,6 +33,7 @@ import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDao;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
 import com.example.blog_kim_s_token.service.payment.model.vbank.insertvbankDto;
 import com.example.blog_kim_s_token.service.payment.model.vbank.vbankDao;
+import com.example.blog_kim_s_token.service.payment.model.vbank.vbankService;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,17 +67,15 @@ public class paymentService {
     @Autowired
     private kakaoService kakaoService;
     @Autowired
-    private sha256 sha256;
-    @Autowired
     private userService userService;
     @Autowired
     private tempPaidDao tempPaidDao;
     @Autowired
-    private cardDao cardDao;
-    @Autowired
     private vbankDao vbankDao;
     @Autowired
     private cardService cardService;
+    @Autowired
+    private vbankService vbankService;
 
     public JSONObject  getVbankDate(getVankDateDto getVankDateDto) {
         System.out.println("getVbankDate");
@@ -309,7 +308,7 @@ public class paymentService {
                 System.out.println("가상계좌 채번완료");
                 byte[] aesCipherRaw2=aes256.decodeBase64(reseponseSettleDto.getVtlAcntNo());
                 reseponseSettleDto.setVtlAcntNo(new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8"));
-                insertVbank(reseponseSettleDto);
+                vbankService.insertVbank(reseponseSettleDto);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -327,33 +326,6 @@ public class paymentService {
             System.out.println("결제금액이 다릅니다");
         }
     }
-    private void insertVbank(reseponseSettleDto reseponseSettleDto) {
-        System.out.println("insertVbank");
-
-        SimpleDateFormat newDtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        SimpleDateFormat dtFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-        try {
-            String  expire = newDtFormat.format(dtFormat.parse(reseponseSettleDto.getExpireDt()));
-            insertvbankDto dto=insertvbankDto.builder()
-                                .vexpireDt(Timestamp.valueOf(expire))
-                                .vfnCd(reseponseSettleDto.getFnCd())
-                                .vfnNm(reseponseSettleDto.getFnNm())
-                                .vmchtId(reseponseSettleDto.getMchtId())
-                                .vmchtTrdNo(reseponseSettleDto.getMchtTrdNo())
-                                .vmethod(reseponseSettleDto.getMethod())
-                                .vtlAcntNo(reseponseSettleDto.getVtlAcntNo())
-                                .vtrdAmt(reseponseSettleDto.getTrdAmt())
-                                .vtrdNo(reseponseSettleDto.getTrdNo())
-                                .build();
-            vbankDao.save(dto);
-                                
-                                
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("insertVbank error"+e.getMessage());
-            throw new RuntimeException("가상 계좌 정보 저장 실패");
-        }
-    }
     public void cancle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("cancle");
         String url=null;
@@ -363,25 +335,8 @@ public class paymentService {
             url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
         }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
             System.out.println("가상계좌 환불");
-            String pktHash=requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId());
-            System.out.println(reseponseSettleDto.getVtlAcntNo());
-            JSONObject parmas=new JSONObject();
-            JSONObject data=new JSONObject();
-            parmas.put("mchtId", reseponseSettleDto.getMchtId());
-            parmas.put("ver", "0A17");
-            parmas.put("method", "VA");
-            parmas.put("bizType", "A2");
-            parmas.put("encCd", "23");
-            parmas.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
-            parmas.put("trdDt", "20210914");
-            parmas.put("trdTm", "220000");
-            data.put("pktHash", sha256.encrypt(pktHash));
-            data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
-            data.put("vAcntNo", aes256.encrypt(reseponseSettleDto.getVtlAcntNo()));
-            body.put("params", parmas);
-            body.put("data", data);
-            url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";
-            
+            this.body=vbankService.makeBody(reseponseSettleDto);
+            url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";  
         }
         requestToSettle(url);
     }

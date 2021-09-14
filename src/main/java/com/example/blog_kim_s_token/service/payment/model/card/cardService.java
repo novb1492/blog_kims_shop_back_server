@@ -39,22 +39,22 @@ public class cardService {
         String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId());
         System.out.println(reseponseSettleDto.getTrdAmt());
         JSONObject body=new JSONObject();
-        JSONObject body3=new JSONObject();
-        JSONObject body4=new JSONObject();
-        body3.put("mchtId", reseponseSettleDto.getMchtId());
-        body3.put("ver", "0A17");
-        body3.put("method", "CA");
-        body3.put("bizType", "C0");
-        body3.put("encCd", "23");
-        body3.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
-        body3.put("trdDt", "20210914");
-        body3.put("trdTm", "210500");
-        body4.put("pktHash", sha256.encrypt(pktHash));
-        body4.put("orgTrdNo", reseponseSettleDto.getTrdNo());
-        body4.put("crcCd", "KRW");
-        body4.put("cnclAmt", aes256.encrypt(reseponseSettleDto.getTrdAmt()));
-        body.put("params", body3);
-        body.put("data", body4);
+        JSONObject params=new JSONObject();
+        JSONObject data=new JSONObject();
+        params.put("mchtId", reseponseSettleDto.getMchtId());
+        params.put("ver", "0A17");
+        params.put("method", "CA");
+        params.put("bizType", "C0");
+        params.put("encCd", "23");
+        params.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
+        params.put("trdDt", "20210914");
+        params.put("trdTm", "220000");
+        data.put("pktHash", sha256.encrypt(pktHash));
+        data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
+        data.put("crcCd", "KRW");
+        data.put("cnclAmt", aes256.encrypt(reseponseSettleDto.getTrdAmt()));
+        body.put("params", params);
+        body.put("data", data);
         return body;
     }
 }

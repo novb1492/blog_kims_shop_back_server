@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class sha256 {
 
-    public String encrypt(String text){
+    public static String encrypt(String text){
         try {
              //일반 가상계좌 "%s%s%s%s%s%s%s","nx_mid_il","vbank","TEST784512","20210913","132000","500","ST1009281328226982205"
            //일반nxca_jt_il ,card
