@@ -14,7 +14,7 @@ import com.example.blog_kim_s_token.customException.failKakaoPay;
 import com.example.blog_kim_s_token.jwt.jwtService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
-import com.example.blog_kim_s_token.service.payment.iamPort.iamportService;
+import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaopayService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +30,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class errorRestController {
     @Autowired
     private jwtService jwtService;
-    @Autowired
-    private iamportService iamportService;
     @Autowired
     private kakaoService kakaoService;
 
@@ -72,29 +70,6 @@ public class errorRestController {
     @ExceptionHandler(IllegalArgumentException.class)
     public JSONObject IllegalArgumentException(IllegalArgumentException exception) {
         System.out.println("IllegalArgumentException");
-        return utillService.makeJson(false, exception.getMessage());
-    }
-    @ExceptionHandler(failBuyException.class)
-    public JSONObject failBuyException(failBuyException exception,HttpSession httpSession) {
-        System.out.println("failBuyException 환불시작");
-        JSONObject jsonObject=new JSONObject();
-        try {
-            if(httpSession.getAttribute("kind").equals("vbank")){
-                jsonObject.put("merchant_uid", httpSession.getAttribute("merchantUid"));
-                jsonObject.put("vbank_due",  httpSession.getAttribute("vbankDue"));
-                jsonObject.put("vbank_holder",  httpSession.getAttribute("vbankHolder"));
-                jsonObject.put("amount",  httpSession.getAttribute("amount"));
-                jsonObject.put("vbank_code",  httpSession.getAttribute("vbank_code"));
-                iamportService.cancleVbank(exception.getpaymentid(),jsonObject);
-            }else{
-                jsonObject.put("imp_uid", exception.getpaymentid());
-                iamportService.cancleBuy(jsonObject);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
-            utillService.makeJson(false,e.getMessage());
-        }
         return utillService.makeJson(false, exception.getMessage());
     }
     @ExceptionHandler(failKakaoPay.class)

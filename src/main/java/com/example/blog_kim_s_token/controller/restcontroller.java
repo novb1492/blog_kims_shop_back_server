@@ -46,7 +46,7 @@ import com.example.blog_kim_s_token.service.fileUpload.fileUploadService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.paymentService;
-import com.example.blog_kim_s_token.service.payment.iamPort.tryImpPayDto;
+
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.example.blog_kim_s_token.service.reservation.tryTempDto;
 import com.nimbusds.jose.shaded.json.JSONObject;
@@ -183,12 +183,6 @@ public class restcontroller {
         System.out.println("getTimeByDate");
         return resevationService.getTimeByDate(getTimeDto);
     }
-    @PostMapping("/api/buyImp")
-    public JSONObject buyImp(@Valid @RequestBody tryImpPayDto tryImpPayDto,HttpServletRequest request,HttpServletResponse response){
-        System.out.println("buyImp");
-        return paymentService.confrimPayment(tryImpPayDto,request);
-       
-    }
     @PostMapping("/api/getPrice")
     public JSONObject getPrice(@Valid@RequestBody getPriceDto getPriceDto,HttpServletResponse response) {
         System.out.println("getPrice");
@@ -207,7 +201,7 @@ public class restcontroller {
     @PostMapping("/auth/reseponseAtImp")
     public void bootPay(@RequestBody JSONObject jsonObject,HttpServletResponse response) {
         System.out.println("payment");
-        paymentService.vbankOk(jsonObject);
+        //paymentService.vbankOk(jsonObject);
     }
     @PostMapping("/api/kakaopay")
     public JSONObject getKakaoPayLink(@Valid @RequestBody tryKakaoPayDto tryKakaoPayDto,HttpServletRequest request,HttpServletResponse response) {

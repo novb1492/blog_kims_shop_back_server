@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class scanVbank implements Tasklet  {
    
-    private vbankDao vbankDao;
+    /*private vbankDao vbankDao;
     
 
     public scanVbank(vbankDao vbankDao){
@@ -29,6 +29,6 @@ public class scanVbank implements Tasklet  {
        System.out.println("scanVbank execute");
        vbankDao.innerfind(Timestamp.valueOf(LocalDateTime.now()));
         return RepeatStatus.FINISHED;
-    }
+    }*/
     
 }

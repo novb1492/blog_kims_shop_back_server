@@ -30,9 +30,7 @@ import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
-import com.example.blog_kim_s_token.service.payment.iamPort.iamportService;
 import com.example.blog_kim_s_token.service.payment.iamPort.nomalPayment;
-import com.example.blog_kim_s_token.service.payment.iamPort.tryImpPayDto;
 import com.example.blog_kim_s_token.service.payment.iamPort.vbankPayment;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDao;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
@@ -51,8 +49,6 @@ public class paymentService {
 
     @Autowired
     private paidDao paidDao;
-    @Autowired
-    private iamportService iamportService;
     @Autowired
     private reservationService resevationService;
     @Autowired
@@ -73,10 +69,7 @@ public class paymentService {
     private tempPaidDao tempPaidDao;
 
 
-    
-    public vBankDto selectVbankProduct(String paymentId) {
-        return  vbankDao.findByPaymentId(paymentId).orElseThrow(()->new RuntimeException("입금대기를 찾을 수없습니다"+paymentId));
-    }
+
     public paidDto selectPaidProduct(String paymentId) {
         return paidDao.findByPaymentId(paymentId).orElseThrow(()->new RuntimeException("입금확인을 찾을 수없습니다"+paymentId));
     }
@@ -111,25 +104,7 @@ public class paymentService {
                                     System.out.println("결제테이블 저장 완료");
 
     }
-    public void insertPayment(vbankPayment vbankPayment,int totalPrice) {
-        System.out.println("insertPayment");
-        vBankDto dto=vBankDto.builder().email(vbankPayment.getEmail())
-                                    .name(vbankPayment.getName())
-                                    .bank(vbankPayment.getBank())
-                                    .bankNum(vbankPayment.getVbankNum())
-                                    .endDate(Timestamp.valueOf(vbankPayment.getEndDate()))
-                                    .paymentId(vbankPayment.getPaymentid())
-                                    .status("ready")
-                                    .kind(vbankPayment.getKind())
-                                    .vbankTotalPrice(totalPrice)
-                                    .bankCode(vbankPayment.getBankCode())
-                                    .pgName(vbankPayment.getPgName())
-                                    .endDateUnixTime(vbankPayment.getUnixTime())
-                                    .merchant_uid(vbankPayment.getMerchantUid())
-                                    .build();
-                                    vbankDao.save(dto);
-                                    System.out.println("vbnk테이블 저장 완료");
-    }
+
     public JSONObject  getVbankDate(getVankDateDto getVankDateDto) {
         System.out.println("getVbankDate");
         try {
@@ -198,41 +173,7 @@ public class paymentService {
         expiredDate=expiredDate.replace("T", " ");
         return expiredDate;
     }
-    @Transactional(rollbackFor = Exception.class)
-    public void vbankOk(JSONObject jsonObject) {
-        System.out.println("vbankOk");
-        System.out.println(jsonObject+" payment");
-        try {
-        String status=(String) jsonObject.get("status");
-        String merchantUid=(String) jsonObject.get("merchant_uid");
-        if(status.equals("paid")&&merchantUid.startsWith("vbank")){
-            System.out.println("가상계좌가 입금 확인됨");
-            String paymentId=(String) jsonObject.get("imp_uid");
-            vBankDto vBankDto=selectVbankProduct(paymentId);
-            if(vBankDto.getKind().equals("reservation")){
-                System.out.println("예약시도 가상계좌였습니다");
-                resevationService.readyTopaid(paymentId);
-            }else{
-                System.out.println("상품시도 가상계좌였습니다");
-            }
-            nomalPayment nomalPayment=new nomalPayment();
-            nomalPayment.setEmail(vBankDto.getEmail());
-            nomalPayment.setName(vBankDto.getName());
-            nomalPayment.setUsedKind(vBankDto.getBank()+" "+vBankDto.getBankNum()+" "+vBankDto.getPgName()+" "+vBankDto.getBankCode());
-            nomalPayment.setPayMethod("vbank");
-            nomalPayment.setKind(vBankDto.getKind());
-            nomalPayment.setPaymentid(vBankDto.getPaymentId());
-            nomalPayment.setStatus("paid");
-            insertPayment(nomalPayment, vBankDto.getVbankTotalPrice());
-            vbankDao.delete(vBankDto);
-            return;
-        }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("vbankOk error"+e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        } 
-    }
+
     public void updatePaidProductForCancle(String paymentid,int minusPrice) {
         paidDto paidDto=selectPaidProduct(paymentid);
         int price=paidDto.getTotalPrice();
@@ -244,18 +185,7 @@ public class paymentService {
         }
         paidDto.setTotalPrice(newPrice);
     }
-    public int updateVbank(String paymentid,int minusPrice) {
-        vBankDto vBankDto=selectVbankProduct(paymentid);
-        int newPrice=minusPrice(vBankDto.getVbankTotalPrice(),minusPrice);
-        if(newPrice==0){
-            vbankDao.delete(vBankDto);
-            System.out.println("잔액 0 채번 취소");
-            
-        }else{
-            vBankDto.setVbankTotalPrice(newPrice);
-        }
-         return newPrice;
-    }
+   
     public int minusPrice(int totalPrice,int minusPrice) {
         int newPrice=totalPrice-minusPrice;
         if(newPrice==0||newPrice>0){
@@ -321,39 +251,6 @@ public class paymentService {
         throw new RuntimeException(messege);
     }
     @Transactional(rollbackFor = Exception.class)
-    public JSONObject confrimPayment(tryImpPayDto tryImpPayDto,HttpServletRequest request) {
-        System.out.println("confrimPayment");
-        System.out.println(tryImpPayDto);
-        String impid=tryImpPayDto.getImpid();
-        try {
-            String[][] itemArray=tryImpPayDto.getItemArray();
-            String kind=aboutPayEnums.valueOf(tryImpPayDto.getKind()).getString();
-            Map<String,Object>result=getTotalPriceAndOther(itemArray, kind);
-            System.out.println(result+" 상품정보 가공");
-            int totalPrice=(int)result.get("totalPrice");
-            String itemName=(String)result.get("itemName");
-            int count=(int)result.get("count");
-            List<Integer>timeOrsize=(List<Integer>)result.get("timesOrSize");
-            confrimProduct(tryImpPayDto.getTotalPrice(),totalPrice,count,itemName);
-            paymentabstract paymentabstract=iamportService.confrimBuy(iamportService.getBuyInfor(impid),totalPrice,kind,request); 
-            if(kind.equals(aboutPayEnums.reservation.getString())){
-                System.out.println("예약 상품 결제");
-                String status=paymentabstract.getStatus();
-                if(status.equals(aboutPayEnums.statusReady.getString())){
-                    Collections.sort(timeOrsize);
-                }
-                resevationService.doReservation(paymentabstract.getEmail(),paymentabstract.getName(), impid, itemArray,tryImpPayDto.getOther(), timeOrsize,status,paymentabstract.getUsedKind());
-            }else if(kind.equals(aboutPayEnums.product.getString())){
-                System.out.println("일반 상품 결제");
-            }
-            return utillService.makeJson(true, "완료되었습니다");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("confrimPayment error");
-            throw new failBuyException(e.getMessage(),impid);
-        }
-    }
-    @Transactional(rollbackFor = Exception.class)
     public JSONObject canclePay(tryCanclePayDto tryCanclePayDto ) {
         System.out.println("canclePay");
         try {
@@ -372,10 +269,6 @@ public class paymentService {
             throw new RuntimeException(e.getMessage());
         }
     }
-    public void requestUpdateVbankBeforePaid(String paymentid,int newPrice,String unixTime) {
-        System.out.println("requestUpdateVbankBeforePaid");
-        iamportService.requestUpdateVbank(paymentid, newPrice, unixTime);
-    }
     public void requestCancleToKakaoPay(String tid,int price) {
         System.out.println("requestCancleToKakaoPay");
         MultiValueMap<String,Object> body=new LinkedMultiValueMap<>();
@@ -384,9 +277,6 @@ public class paymentService {
         body.add("cancel_amount", price);
         body.add("cancel_tax_free_amount",0);
         kakaoService.cancleKakaopay(body);
-    }
-    public void canclePay(JSONObject body) {
-        iamportService.cancleBuy(body);
     }
     public Map<String,Object> getVankInforInDb(paidDto paidDto) {
         System.out.println("getVankInforInDb");
@@ -483,8 +373,8 @@ public class paymentService {
                 vbankPayment.setVbankNum(vtlAcntNo);
                 vbankPayment.setPaymentid(reseponseSettleDto.getTrdNo());
                 vbankPayment.setMerchantUid(reseponseSettleDto.getMchtTrdNo());
-                
-                insertPayment(vbankPayment,Integer.parseInt(trdAmt));
+              
+         
             }
         } catch (Exception e) {
             e.printStackTrace();

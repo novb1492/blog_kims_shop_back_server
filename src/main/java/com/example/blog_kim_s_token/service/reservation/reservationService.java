@@ -16,7 +16,7 @@ import com.example.blog_kim_s_token.enums.reservationEnums;
 
 import com.example.blog_kim_s_token.model.payment.paidDto;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
-import com.example.blog_kim_s_token.model.payment.vBankDto;
+
 
 import com.example.blog_kim_s_token.model.reservation.*;
 import com.example.blog_kim_s_token.model.user.userDto;
@@ -369,12 +369,12 @@ public class reservationService {
                 array[temp][2]=m.getCreated().toString();
                 array[temp][3]=m.getDate_and_time().toString();
                 if(m.getStatus().equals("ready")){
-                    vBankDto vBankDto=paymentService.selectVbankProduct(m.getPayment_id());
+                    /*vBankDto vBankDto=null;
                     array[temp][4]="미입금";
                     array[temp][5]=vBankDto.getBank()+" "+vBankDto.getBankNum();
                     array[temp][6]=vBankDto.getEndDate().toString();
                     array[temp][7]=vBankDto.getVbankTotalPrice()+"";
-                    array[temp][8]=null;
+                    array[temp][8]=null;*/
                 }else{
                     array[temp][4]="결제완료";
                     array[temp][5]=m.getUsed_pay_kind();
@@ -405,9 +405,7 @@ public class reservationService {
             reservationDao.deleteById(r.getId());
             if(status.equals(aboutPayEnums.statusReady.getString())){
                 System.out.println("가상계좌 입금전 환불 시도");
-                vBankDto vBankDto=paymentService.selectVbankProduct(paymentid);
-                int newPrice=paymentService.updateVbank(paymentid,price);
-                paymentService.requestUpdateVbankBeforePaid(paymentid, newPrice,vBankDto.getEndDateUnixTime());
+               
             }else if(status.equals(aboutPayEnums.statusPaid.getString())){
                 System.out.println("입금후 환불시도");
                 paidDto paidDto=paymentService.selectPaidProduct(paymentid);
@@ -419,17 +417,7 @@ public class reservationService {
                     return;
                 }else{
                     System.out.println("아임포트 환불");
-                    JSONObject body=new JSONObject();
-                    if(paidDto.getPayMethod().equals(aboutPayEnums.vbank.getString())){
-                        Map<String,Object>vbankMap=paymentService.getVankInforInDb(paidDto);
-                        body.put("refund_holder", vbankMap.get("refund_holder"));
-                        body.put("refund_bank", vbankMap.get("refund_bank"));
-                        body.put("refund_account", vbankMap.get("refund_account"));
-                    }
-                    body.put("amount", price);
-                    body.put("imp_uid", paymentid);
-                    body.put("checksum",originalPaidPrice);
-                    paymentService.canclePay(body);
+                    
                 }
             }
         }
