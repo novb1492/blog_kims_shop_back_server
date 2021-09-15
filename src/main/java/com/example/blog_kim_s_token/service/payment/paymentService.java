@@ -68,24 +68,24 @@ public class paymentService {
 
 
 
-    public JSONObject  getVbankDate(getVankDateDto getVankDateDto) {
+    private String  getVbankDate(String kind,int year,int month,int date,List<Integer>times) {
         System.out.println("getVbankDate");
+        String expiredDate=null;
         try {
-            if(getVankDateDto.getKind().equals(aboutPayEnums.reservation.getString())){
+            if(kind.equals(aboutPayEnums.reservation.getString())){
                 Calendar getToday = Calendar.getInstance();
                 getToday.setTime(new Date()); 
-                String requestDate=getVankDateDto.getYear()+"-"+getVankDateDto.getMonth()+"-"+getVankDateDto.getDate();
+                String requestDate=year+"-"+month+"-"+date;
                 long diffDays = utillService.getDateGap(getToday, requestDate);
-                Collections.sort(getVankDateDto.getTimes());
-                int shortestTime=getVankDateDto.getTimes().get(0);
-                checkTime(getVankDateDto.getYear(),getVankDateDto.getMonth(),getVankDateDto.getDate(),shortestTime);
-                JSONObject dateAndTime=new JSONObject();
-                getVbankDate(diffDays, shortestTime, requestDate,dateAndTime);
-                dateAndTime.put("bool", true);
-                return dateAndTime;
+                Collections.sort(times);
+                int shortestTime=times.get(0);
+                checkTime(year,month,date,shortestTime);
+                expiredDate=getVbankDate(diffDays, shortestTime, requestDate);
+                
             }else{
-                return utillService.makeJson(true,getVbankDate());
+                expiredDate=getVbankDate();
             }
+            return expiredDate;
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -101,7 +101,7 @@ public class paymentService {
             throw new RuntimeException("가상 계좌 제한시간은 최대 "+minusHour+"시간입니다");
         }
     }
-    private void getVbankDate(long diffDays,int shortestTime,String requestDate,JSONObject jsonObject) {
+    private String getVbankDate(long diffDays,int shortestTime,String requestDate ) {
         System.out.println("getVbankDate");   
         String expiredDate=null;
         String time=null;
@@ -133,7 +133,7 @@ public class paymentService {
             expiredDate=getVbankDate();
         }
         System.out.println(expiredDate+" 최종"+ time);
-        jsonObject.put("date", expiredDate);
+        return expiredDate;
     }
     private String getVbankDate() {
         System.out.println("getVbankDate");
@@ -242,6 +242,10 @@ public class paymentService {
             String hashPrice=aes256.encrypt(price);
             String mchtCustId=aes256.encrypt(email);
             tempService.insert(email, mchtTrdNo, price);
+            if(getHashInfor.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
+                System.out.println("가상계좌 입금기한 생성시도");
+                response.put("expiredate",  getVbankDate(kind, getHashInfor.getYear(), getHashInfor.getMonth() , getHashInfor.getDate(), getHashInfor.getTimes()));
+            }
             if(kind.equals(aboutPayEnums.reservation.getString())){
                 System.out.println("예약 임시 테이블 저장");
                 reservationService.insertTemp(getHashInfor,email,mchtTrdNo,userDto.getName(),mchtCustId);

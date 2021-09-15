@@ -168,11 +168,6 @@ public class restcontroller {
         System.out.println("getTimeByDate");
         return resevationService.getTimeByDate(getTimeDto);
     }
-    @PostMapping("/api/getVankDate")
-    public JSONObject getVankDate(@Valid @RequestBody getVankDateDto getVankDateDto,HttpServletResponse response) {
-        System.out.println("getVankDate");
-        return paymentService.getVbankDate(getVankDateDto);
-    }
     @PostMapping("/api/getClientReservation")
     public JSONObject getClientReservation(@RequestBody JSONObject JSONObject,HttpServletResponse response) {
         System.out.println("getClientReservation");
