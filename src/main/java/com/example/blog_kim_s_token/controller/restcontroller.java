@@ -269,13 +269,8 @@ public class restcontroller {
     public void settlebank(reseponseSettleDto reseponseSettleDto,HttpServletResponse response) {
         System.out.println("settlebank");
         System.out.println(reseponseSettleDto.toString());
- 
-       /* if(reseponseSettleDto.getOutStatCd().equals("21") ||reseponseSettleDto.getOutStatCd().equals("0021")){
-            System.out.println("결제 완료");
-            paymentService.okSettle(reseponseSettleDto);
-        }else{
-            System.out.println("결제 실패");
-        }  */
+        paymentService.tryUpdateVbank(reseponseSettleDto);
+        
     }
     @PostMapping("/api/confrimSettle")
     public void confrimSettle(@RequestBody reseponseSettleDto reseponseSettleDto,HttpServletResponse response) {

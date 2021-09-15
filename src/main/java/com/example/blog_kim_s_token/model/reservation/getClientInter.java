@@ -10,7 +10,7 @@ public interface getClientInter {
     Timestamp getDate_and_time();
     String getPayment_id();
     ///product
-    int getPrice();
+    String getPrice();
     ///vbank
     String getVid();
     Timestamp getVexpire_dt();

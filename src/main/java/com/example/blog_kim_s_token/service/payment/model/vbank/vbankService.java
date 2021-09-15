@@ -14,6 +14,7 @@ import com.nimbusds.jose.shaded.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class vbankService {
@@ -50,7 +51,6 @@ public class vbankService {
             throw new RuntimeException("가상 계좌 정보 저장 실패");
         }
     }
-
     public JSONObject makeBody(reseponseSettleDto reseponseSettleDto) {
         try {
             Map<String,String>map=utillService.getTrdDtTrdTm();
@@ -77,6 +77,16 @@ public class vbankService {
             e.printStackTrace();
             throw new RuntimeException();
         }
-        
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void okVank(reseponseSettleDto reseponseSettleDto) {
+        System.out.println("okVank");
+        try {
+            insertvbankDto insertvbankDto=vbankDao.findByVmchtTrdNo(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalAccessError("vbank에 내역이 존재 하지 않습니다"));
+            insertvbankDto.setVbankstatus(aboutPayEnums.statusPaid.getString()); 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -27,6 +27,7 @@ import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.model.card.cardService;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDao;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
+import com.example.blog_kim_s_token.service.payment.model.vbank.insertvbankDto;
 import com.example.blog_kim_s_token.service.payment.model.vbank.vbankService;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
@@ -366,7 +367,7 @@ public class paymentService {
         try {
             headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
             headers.set("charset", "UTF-8");
-    
+      
             HttpEntity<JSONObject>entity=new HttpEntity<>(body,headers);
             System.out.println(entity.getBody()+" 요청정보"+entity.getHeaders());
             JSONObject respone= restTemplate.postForObject(url,entity,JSONObject.class);
@@ -380,6 +381,17 @@ public class paymentService {
             headers.clear();
         }
     }
+    public void tryUpdateVbank(reseponseSettleDto reseponseSettleDto) {
+        System.out.println("tryUpdateVbank");
+        if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())&&reseponseSettleDto.getOutStatCd().equals("0021")){
+            System.out.println("vbank 입금이 되었습니다");
+            vbankService.okVank(reseponseSettleDto);
+        }else{
+            System.out.println("vbank가 아니거나 채번요청");
+        }
+       
+    }
+
 
   
 

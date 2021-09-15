@@ -373,10 +373,18 @@ public class reservationService {
                     paidPrice=m.getPrice()+"";
                 }else if(m.getVid()!=null){
                     System.out.println("가상계좌결제 예약");
-                    status="입금대기";
-                    usedKind=m.getVfn_nm()+" "+m.getVtl_acnt_no();
-                    paidDate=m.getVexpire_dt().toString();
-                    paidPrice=m.getVtrd_amt();
+                    if(m.getVbankstatus().equals(aboutPayEnums.statusReady.getString())){
+                        status="입금대기";
+                        usedKind=m.getVfn_nm()+" "+m.getVtl_acnt_no();
+                        paidDate=m.getVexpire_dt().toString();
+                        paidPrice=m.getVtrd_amt();
+                    }else{
+                        status="결제완료";
+                        usedKind=m.getVfn_nm()+" "+m.getVtl_acnt_no();
+                        paidDate=m.getVexpire_dt().toString();
+                        paidPrice=m.getPrice();
+                    }
+                   
                 }
                 array[temp][4]=status;
                 array[temp][5]=usedKind;
