@@ -271,17 +271,16 @@ public class paymentService {
     public JSONObject confrimSettle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("confrimSettle");
         try {
-            String outStatCd=reseponseSettleDto.getOutStatCd();
             byte[] aesCipherRaw=aes256.decodeBase64(reseponseSettleDto.getTrdAmt());
             String trdAmt =new String(aes256.aes256DecryptEcb(aesCipherRaw),"UTF-8");
             reseponseSettleDto.setTrdAmt(trdAmt);
             userDto userDto=userService.sendUserDto();
             checkDetails(reseponseSettleDto,userDto.getEmail());
-            if(outStatCd.equals("0021")){
-                System.out.println("일반 결제 상품입니다");
+            if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.cardmehtod.getString())){
+                System.out.println("카드 결제 상품입니다");
                 cardService.insertCard(reseponseSettleDto);
                
-            }else if(outStatCd.equals("0051")){
+            }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
                 System.out.println("가상계좌 채번완료");
                 byte[] aesCipherRaw2=aes256.decodeBase64(reseponseSettleDto.getVtlAcntNo());
                 reseponseSettleDto.setVtlAcntNo(new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8"));
