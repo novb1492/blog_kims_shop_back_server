@@ -350,32 +350,48 @@ public class reservationService {
     }
     private String[][] makeResponse(JSONObject jsonObject,List<getClientInter>dtoArray) {
         System.out.println("makeResponse");
+        for(int i=0;i<dtoArray.size();i++){
+            System.out.println(dtoArray.get(i).getId());
+        }
+       
         String[][] array=new String[dtoArray.size()][9];
+        String status=null;
+        String usedKind=null;
+        String paidDate=null;
+        String paidPrice=null;
             int temp=0;
             for(getClientInter m:dtoArray){
                 array[temp][0]=Integer.toString(m.getId());
                 array[temp][1]=m.getSeat();
                 array[temp][2]=m.getCreated().toString();
                 array[temp][3]=m.getDate_and_time().toString();
-                if(m.getStatus().equals("ready")){
-                    /*vBankDto vBankDto=null;
-                    array[temp][4]="미입금";
-                    array[temp][5]=vBankDto.getBank()+" "+vBankDto.getBankNum();
-                    array[temp][6]=vBankDto.getEndDate().toString();
-                    array[temp][7]=vBankDto.getVbankTotalPrice()+"";
-                    array[temp][8]=null;*/
-                }else{
-                    array[temp][4]="결제완료";
-                    array[temp][5]=m.getUsed_pay_kind();
-                    array[temp][6]=m.getCreated().toString();
-                    array[temp][7]=m.getPrice()+"";
-                    if(LocalDateTime.now().plusHours(limitedCancleHour).isAfter(m.getDate_and_time().toLocalDateTime())){
-                        System.out.println("현재시간이 사용시간 이후입니다");
-                        array[temp][8]=Integer.toString(cantFlag);
-                    }
+                if(m.getCid()!=null){
+                    System.out.println("카드결제 예약");
+                    status="결제완료";
+                    usedKind=m.getCfn_nm();
+                    paidDate=m.getC_created().toString();
+                    paidPrice=m.getPrice()+"";
+                }else if(m.getVid()!=null){
+                    System.out.println("가상계좌결제 예약");
+                    status="입금대기";
+                    usedKind=m.getVfn_nm()+" "+m.getVtl_acnt_no();
+                    paidDate=m.getVexpire_dt().toString();
+                    paidPrice=m.getVtrd_amt();
+                }
+                array[temp][4]=status;
+                array[temp][5]=usedKind;
+                array[temp][6]=paidDate;
+                array[temp][7]=paidPrice;
+                if(LocalDateTime.now().plusHours(limitedCancleHour).isAfter(m.getDate_and_time().toLocalDateTime())){
+                    System.out.println("현재시간이 사용시간 이후입니다");
+                    array[temp][8]=Integer.toString(cantFlag);
                 }
                 temp++;
             }
+        for(String s:array[0]){
+            System.out.println(s);
+        }
+  
         return array;
     }
     private void confrimCancle(Timestamp dateAndTime,String remail) {
