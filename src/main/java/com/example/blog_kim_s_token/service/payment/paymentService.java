@@ -16,6 +16,7 @@ import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.getVankDateDto;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.product.productDto;
+import com.example.blog_kim_s_token.model.reservation.reservationInsertDto;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.priceService;
 import com.example.blog_kim_s_token.service.userService;
@@ -67,6 +68,8 @@ public class paymentService {
     private cardService cardService;
     @Autowired
     private vbankService vbankService;
+    @Autowired
+    private reservationService reservationService;
 
     public JSONObject  getVbankDate(getVankDateDto getVankDateDto) {
         System.out.println("getVbankDate");
@@ -222,13 +225,15 @@ public class paymentService {
         body.add("cancel_tax_free_amount",0);
         kakaoService.cancleKakaopay(body);
     }
+    @Transactional(rollbackFor = Exception.class)
     public JSONObject makeTohash(getHashInfor getHashInfor) {
         System.out.println("makeTohash");
         JSONObject response=new JSONObject();
         try {
             String kind=aboutPayEnums.valueOf(getHashInfor.getKind()).getString();
             System.out.println(kind); 
-            String email=SecurityContextHolder.getContext().getAuthentication().getName();
+            userDto userDto=userService.sendUserDto();
+            String email=userDto.getEmail();
             String price=getHashInfor.getTotalPrice()+"";
             Map<String,String>map=utillService.getTrdDtTrdTm();
             String mchtTrdNo=kind+utillService.GetRandomNum(10);
@@ -244,17 +249,36 @@ public class paymentService {
             response.put("trdDt", getHashInfor.getRequestDate());
             response.put("trdTm", getHashInfor.getRequestTime());
             response.put("pktHash", pktHash);
+            response.put("bool", true);
             tempPaidDto dto=tempPaidDto.builder()
                                         .tpemail(email)
                                         .tpaymentid(mchtTrdNo)
                                         .tpprice(price)
                                         .build();
                                         tempPaidDao.save(dto);
+            if(kind.equals(aboutPayEnums.reservation.getString())){
+                System.out.println("예약 임시 테이블 저장");
+                
+                reservationInsertDto dto2=reservationInsertDto.builder()
+                                                                .date(getHashInfor.getDate())
+                                                                .email(email)
+                                                                .month(getHashInfor.getMonth())
+                                                                .name(userDto.getName())
+                                                                .paymentId(mchtTrdNo)
+                                                                .seat(getHashInfor.getSeat())
+                                                                .status("temp")
+                                                                .times(getHashInfor.getTimes())
+                                                                .year(getHashInfor.getYear())
+                                                                .build();
+                reservationService.insertTemp(dto2);
+            }else {
+                System.out.println("일반상품");
+            }
             return response;
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("makeTohash error"+e.getMessage());
-            throw new RuntimeException("구매정보 해시화 실패");
+            throw new RuntimeException(e.getMessage());
         }
     }
     private String requestPayString(getHashInfor getHashInfor) {
@@ -293,7 +317,7 @@ public class paymentService {
                 reseponseSettleDto.setVtlAcntNo(new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8"));
                 vbankService.insertVbank(reseponseSettleDto);
             }
-            throw new Exception("test");
+        
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("confrimSettle error"+e.getMessage());
@@ -308,6 +332,7 @@ public class paymentService {
         }else if(!tempPaidDto.getTpprice().equals(reseponseSettleDto.getTrdAmt())){
             System.out.println("결제금액이 다릅니다");
         }
+    
     }
     public void cancle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("cancle");

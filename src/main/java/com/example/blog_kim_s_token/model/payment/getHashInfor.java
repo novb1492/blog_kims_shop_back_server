@@ -1,5 +1,7 @@
 package com.example.blog_kim_s_token.model.payment;
 
+import java.util.List;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
@@ -21,9 +23,17 @@ public class getHashInfor {
     @NotBlank(message = "kind가 공백입니다")
     private String kind;
 
+    private String seat;
+    private int month;
+    private int date;
+    private int year;
+    private String status;
+    private List<Integer> times;
+    
     private String mchtTrdNo;
     private String requestDate;
     private String requestTime;
+    
     
 
 }

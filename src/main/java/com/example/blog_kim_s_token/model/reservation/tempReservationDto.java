@@ -47,12 +47,6 @@ public class tempReservationDto {
     @Column(name = "trStatus",nullable = false)
     private String trstatus;
 
-    @Column(name = "trUsedPayMethod",nullable = false)
-    private String trUsedPayMethod;
-
-    @Column(name="trRdate")
-    private Timestamp trRdate;
-
     @Column(name="trDateAndTime")
     private Timestamp trDateAndTime;
 

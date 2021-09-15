@@ -143,7 +143,6 @@ public class reservationService {
                 reservationInsertDto.setPaymentId(paymentid);
                 reservationInsertDto.setSeat(itemArray[0][0]);
                 reservationInsertDto.setStatus(status);
-                reservationInsertDto.setUsedKind(usedKind);
                 reservationInsertDto.setYear(Integer.parseInt(other[0]));
                 reservationInsertDto.setMonth(Integer.parseInt(other[1]));
                 reservationInsertDto.setDate(Integer.parseInt(other[2]));
@@ -158,20 +157,17 @@ public class reservationService {
     private void insertTempTable(reservationInsertDto reservationInsertDto) {
         System.out.println("insertTempTable");
         List<Integer>times=reservationInsertDto.getTimes();
-        userDto userDto=userService.sendUserDto();
         try {  
             System.out.println(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" 00:00:00")+" 사용예정일");
             for(int i=0;i<times.size();i++){
                 tempReservationDto dto=tempReservationDto.builder()
-                                        .trEmail(userDto.getEmail())
-                                        .trName(userDto.getName())
+                                        .trEmail(reservationInsertDto.getEmail())
+                                        .trName(reservationInsertDto.getName())
                                         .trTime(times.get(i))
                                         .trSeat(reservationInsertDto.getSeat())
                                         .trPaymentid(reservationInsertDto.getPaymentId())
-                                        .trRdate(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" 00:00:00"))
                                         .trDateAndTime(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" "+times.get(i)+":00:00"))
                                         .trstatus("temp")
-                                        .trUsedPayMethod(reservationInsertDto.getUsedKind())
                                         .build();
                                         tempReservationDao.save(dto);
             }
@@ -229,8 +225,6 @@ public class reservationService {
                                         .paymentId(reservationInsertDto.getPaymentId())
                                         .rDate(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" 00:00:00"))
                                         .dateAndTime(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" "+times.get(i)+":00:00"))
-                                        .status(reservationInsertDto.getStatus())
-                                        .usedPayKind(reservationInsertDto.getUsedKind())
                                         .build();
                                         reservationDao.save(dto);
             }
@@ -242,14 +236,14 @@ public class reservationService {
     }
     private void confrimInsert(reservationInsertDto reservationInsertDto){
         System.out.println("confrimInsert");
+      
             List<mainReservationDto>array=reservationDao.findByEmailNative(reservationInsertDto.getEmail(),reservationInsertDto.getSeat());
             List<Integer>times=reservationInsertDto.getTimes();
-            System.out.println(array.toString()+" 내역들");
             if(reservationInsertDto.getTimes().size()<=0){
                 System.out.println("몇시간 쓸지 선택 되지 않음");
                 throw new RuntimeException("시간을 선택하지 않았습니다");
             }else if(array!=null){
-                System.out.println("show");
+                System.out.println(array.toString()+" 내역들");
                 for(mainReservationDto m:array){
                     for(int i:times){
                         String date=reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" "+i+":00:00";
@@ -384,10 +378,6 @@ public class reservationService {
             }
         return array;
     }
-   
-        
-  
-    
     private void confrimCancle(Timestamp dateAndTime,String remail) {
         System.out.println("confrimCancle");
         String messege=null;
@@ -401,13 +391,5 @@ public class reservationService {
             return;
         }
        throw new RuntimeException(messege);
-    }
-    public void readyTopaid(String paymentId) {
-        System.out.println("readyTopaid");
-        List<mainReservationDto>array=reservationDao.findByPaymentId(paymentId);
-        for(mainReservationDto m:array){
-            m.setStatus("paid");
-        }
-        System.out.println("예약테이블 paid로 변경완료");
     }
 }
