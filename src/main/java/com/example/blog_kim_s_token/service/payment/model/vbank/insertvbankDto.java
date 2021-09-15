@@ -60,7 +60,7 @@ public class insertvbankDto {
     @Column(name = "vbankstatus",nullable = false)
     private String vbankstatus;
 
-    @Column(name = "created")
+    @Column(name = "vcreated")
     @CreationTimestamp
     private Timestamp created;   
 }

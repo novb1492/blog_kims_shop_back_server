@@ -47,6 +47,9 @@ public class tempReservationDto {
     @Column(name = "trStatus",nullable = false)
     private String trstatus;
 
+    @Column(name="trRdate")
+    private Timestamp trRdate;
+
     @Column(name="trDateAndTime")
     private Timestamp trDateAndTime;
 

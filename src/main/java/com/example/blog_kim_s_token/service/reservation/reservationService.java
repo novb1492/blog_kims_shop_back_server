@@ -168,6 +168,7 @@ public class reservationService {
                                         .trPaymentid(reservationInsertDto.getPaymentId())
                                         .trDateAndTime(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" "+times.get(i)+":00:00"))
                                         .trstatus("temp")
+                                        .trRdate(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" 00:00:00"))
                                         .build();
                                         tempReservationDao.save(dto);
             }
@@ -189,6 +190,7 @@ public class reservationService {
                                         .paymentId(t.getTrPaymentid())
                                         .seat(t.getTrSeat())
                                         .time(t.getTrTime())
+                                        .rDate(t.getTrRdate())
                                         .build();
                                         reservationDao.save(dto);
                                         tempReservationDao.delete(t);
@@ -290,7 +292,7 @@ public class reservationService {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("getClientReservation error");
-            throw new RuntimeException("예약조회에 실패했습니다");
+            throw new RuntimeException(e.getMessage());
         }
     }
     private reservationEnums confrimDateAndPage(int nowPage,int totalPage,String startDate,String endDate){
@@ -329,7 +331,7 @@ public class reservationService {
             if(startDate.isEmpty()&&endDate.isEmpty()){
                 System.out.println("날짜 미지정 검색");
                 fisrt=utillService.getFirst(nowPage, pagingNum);
-                dtoArray=reservationDao.findByEmailJoinOrderByIdDescNative(email, fisrt-1,utillService.getEnd(fisrt, pagingNum)-fisrt+1);
+                dtoArray=reservationDao.findByEmailJoinOrderByIdDescNative(email, fisrt-1,utillService.getEnd(fisrt, pagingNum)-fisrt+1).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
             }else{
                 System.out.println("날짜 지정 검색");
                 fisrt=utillService.getFirst(nowPage, pagingNum);

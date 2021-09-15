@@ -46,7 +46,7 @@ public class cardDto {
     @Column(name = "cfnNm",nullable = false)
     private String cfnNm;
 
-    @Column(name = "created")
+    @Column(name = "cCreated")
     @CreationTimestamp
     private Timestamp created;    
 }

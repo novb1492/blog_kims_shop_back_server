@@ -20,8 +20,8 @@ public interface reservationDao extends JpaRepository<mainReservationDto,Integer
     @Query(value = "select  * from reservation where email=? AND seat=?",nativeQuery = true)
     List<mainReservationDto>findByEmailNative(String email,String seat);
 
-    @Query(value = "select a.*,b.price from reservation a inner join product b on a.seat=b.product_name where a.email=? order by a.id desc limit ?,?",nativeQuery = true)
-    List<getClientInter> findByEmailJoinOrderByIdDescNative(String email,int nowPage,int totalPage);
+    @Query(value = "select a.*,b.price,c.* from reservation a inner join  product b on a.seat=b.product_name inner join card c on a.payment_id=c.cmcht_trd_no where a.email=? order by a.id desc limit ?,?",nativeQuery = true)
+    Optional<List<getClientInter>> findByEmailJoinOrderByIdDescNative(String email,int nowPage,int totalPage);
 
     @Query(value = "select a.*,b.price from reservation a inner join product b on a.seat=b.product_name where a.email=? and a.r_date between ? and ? order by a.id desc limit ?,?",nativeQuery = true)
     List<getClientInter>findByEmailJoinOrderByIdBetweenDescNative(String email,Timestamp startDate,Timestamp endDate,int nowPage,int totalPage);
