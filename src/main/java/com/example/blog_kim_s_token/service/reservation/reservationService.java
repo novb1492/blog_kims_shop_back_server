@@ -13,6 +13,7 @@ import java.util.List;
 import com.amazonaws.services.managedblockchain.model.IllegalActionException;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.enums.reservationEnums;
+import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.reservation.*;
 import com.example.blog_kim_s_token.service.utillService;
@@ -146,9 +147,22 @@ public class reservationService {
                 reservationInsertDto.setTimes(times);
        confrimContents(reservationInsertDto);
     }
-    public JSONObject insertTemp(reservationInsertDto reservationInsertDto) {
-        confrimInsert(reservationInsertDto);
-        insertTempTable(reservationInsertDto);
+    public JSONObject insertTemp(getHashInfor getHashInfor,String email,String mchtTrdNo,String name,String mchtCustId) {
+        System.out.println("insertTemp");
+        reservationInsertDto dto=reservationInsertDto.builder()
+                                                    .date(getHashInfor.getDate())
+                                                    .email(email)
+                                                    .month(getHashInfor.getMonth())
+                                                    .name(name)
+                                                    .paymentId(mchtTrdNo)
+                                                    .seat(getHashInfor.getSeat())
+                                                    .status("temp")
+                                                    .times(getHashInfor.getTimes())
+                                                    .year(getHashInfor.getYear())
+                                                    .mchtCustId(mchtCustId)
+                                                    .build();
+        confrimInsert(dto);
+        insertTempTable(dto);
         return utillService.makeJson(true, "");
     }
     private void insertTempTable(reservationInsertDto reservationInsertDto) {

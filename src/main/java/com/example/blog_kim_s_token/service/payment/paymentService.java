@@ -16,7 +16,6 @@ import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.getVankDateDto;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.product.productDto;
-import com.example.blog_kim_s_token.model.reservation.reservationInsertDto;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.priceService;
 import com.example.blog_kim_s_token.service.userService;
@@ -25,7 +24,6 @@ import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.model.card.cardService;
-import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDao;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
 import com.example.blog_kim_s_token.service.payment.model.vbank.vbankService;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
@@ -60,13 +58,14 @@ public class paymentService {
     @Autowired
     private userService userService;
     @Autowired
-    private tempPaidDao tempPaidDao;
-    @Autowired
     private cardService cardService;
     @Autowired
     private vbankService vbankService;
     @Autowired
     private reservationService reservationService;
+    @Autowired
+    private tempService tempService;
+
 
 
     public JSONObject  getVbankDate(getVankDateDto getVankDateDto) {
@@ -232,7 +231,8 @@ public class paymentService {
             System.out.println(kind); 
             userDto userDto=userService.sendUserDto();
             String email=userDto.getEmail();
-            String price=getHashInfor.getTotalPrice()+"";
+            String price=Integer.toString(priceService.responeTotalprice(getHashInfor.getProductName(), getHashInfor.getCount()));
+            getHashInfor.setTotalPrice(price);
             Map<String,String>map=utillService.getTrdDtTrdTm();
             String mchtTrdNo=kind+utillService.GetRandomNum(10);
             getHashInfor.setMchtTrdNo(mchtTrdNo);
@@ -241,6 +241,13 @@ public class paymentService {
             String pktHash=sha256.encrypt(requestPayString(getHashInfor));
             String hashPrice=aes256.encrypt(price);
             String mchtCustId=aes256.encrypt(email);
+            tempService.insert(email, mchtTrdNo, price);
+            if(kind.equals(aboutPayEnums.reservation.getString())){
+                System.out.println("예약 임시 테이블 저장");
+                reservationService.insertTemp(getHashInfor,email,mchtTrdNo,userDto.getName(),mchtCustId);
+            }else {
+                System.out.println("일반상품");
+            }
             response.put("mchtCustId", mchtCustId);
             response.put("mchtTrdNo", mchtTrdNo);
             response.put("trdAmt", hashPrice);
@@ -248,31 +255,6 @@ public class paymentService {
             response.put("trdTm", getHashInfor.getRequestTime());
             response.put("pktHash", pktHash);
             response.put("bool", true);
-            tempPaidDto dto=tempPaidDto.builder()
-                                        .tpemail(email)
-                                        .tpaymentid(mchtTrdNo)
-                                        .tpprice(price)
-                                        .build();
-                                        tempPaidDao.save(dto);
-            if(kind.equals(aboutPayEnums.reservation.getString())){
-                System.out.println("예약 임시 테이블 저장");
-               
-                reservationInsertDto dto2=reservationInsertDto.builder()
-                                                                .date(getHashInfor.getDate())
-                                                                .email(email)
-                                                                .month(getHashInfor.getMonth())
-                                                                .name(userDto.getName())
-                                                                .paymentId(mchtTrdNo)
-                                                                .seat(getHashInfor.getSeat())
-                                                                .status("temp")
-                                                                .times(getHashInfor.getTimes())
-                                                                .year(getHashInfor.getYear())
-                                                                .mchtCustId(mchtCustId)
-                                                                .build();
-                reservationService.insertTemp(dto2);
-            }else {
-                System.out.println("일반상품");
-            }
             return response;
         } catch (Exception e) {
             e.printStackTrace();
@@ -322,7 +304,8 @@ public class paymentService {
     private void checkDetails(reseponseSettleDto reseponseSettleDto,String email) {
         System.out.println("checkDetails");
         String message=null;
-        tempPaidDto tempPaidDto=tempPaidDao.findByTpaymentid(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalActionException("결제 요청 정보가 없습니다"));
+        String mchtTrdNo=reseponseSettleDto.getMchtTrdNo();
+        tempPaidDto tempPaidDto=tempService.selectByMchtTrdNo(mchtTrdNo);
         if(!tempPaidDto.getTpemail().equals(email)){
             System.out.println("이메일이 다름");
             message="이메일이 다름";
@@ -331,7 +314,7 @@ public class paymentService {
             message="결제금액이 다릅니다";
         }else{
             System.out.println("세틀뱅크 결제검증 통과");
-            tempPaidDao.deleteByTpaymentid(reseponseSettleDto.getMchtTrdNo());
+            tempService.deleteByMchtTrdNo(mchtTrdNo);
             System.out.println("임시 테이블 삭제완료");
             return;
         }

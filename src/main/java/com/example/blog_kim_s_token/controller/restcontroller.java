@@ -24,7 +24,6 @@ import com.example.blog_kim_s_token.model.payment.tryCanclePayDto;
 import com.example.blog_kim_s_token.model.product.getPriceDto;
 import com.example.blog_kim_s_token.model.reservation.getDateDto;
 import com.example.blog_kim_s_token.model.reservation.getTimeDto;
-import com.example.blog_kim_s_token.model.reservation.reservationInsertDto;
 import com.example.blog_kim_s_token.model.user.addressDto;
 import com.example.blog_kim_s_token.model.user.phoneDto;
 import com.example.blog_kim_s_token.model.user.pwdDto;
@@ -72,8 +71,6 @@ public class restcontroller {
     private paymentService paymentService;
     @Autowired
     private boardService boardService;
-    @Autowired
-    private reservationService reservationService;
     @Autowired
     private jwtService jwtService;
 
@@ -171,11 +168,6 @@ public class restcontroller {
         System.out.println("getTimeByDate");
         return resevationService.getTimeByDate(getTimeDto);
     }
-    @PostMapping("/api/getPrice")
-    public JSONObject getPrice(@Valid@RequestBody getPriceDto getPriceDto,HttpServletResponse response) {
-        System.out.println("getPrice");
-        return priceService.responeTotalprice(getPriceDto);
-    }
     @PostMapping("/api/getVankDate")
     public JSONObject getVankDate(@Valid @RequestBody getVankDateDto getVankDateDto,HttpServletResponse response) {
         System.out.println("getVankDate");
@@ -262,12 +254,6 @@ public class restcontroller {
         System.out.println("getSha256Hash");
         jwtService.makeNewAccessToken(request, response);
         return paymentService.makeTohash(getHashInfor);
-    }
-    @PostMapping("/api/tempInsertReservation")
-    public JSONObject tempInsertReservation(@RequestBody reservationInsertDto reservationInsertDto,HttpServletResponse response) {
-        System.out.println("tempInsertReservation");
-        System.out.println(reservationInsertDto.toString());
-        return reservationService.insertTemp(reservationInsertDto);
     }
     @RequestMapping("/auth/settlebank")
     public void settlebank(reseponseSettleDto reseponseSettleDto,HttpServletResponse response) {

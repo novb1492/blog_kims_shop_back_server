@@ -1,6 +1,9 @@
 package com.example.blog_kim_s_token.service;
 
+import java.util.Map;
 import java.util.Optional;
+
+import javax.management.RuntimeErrorException;
 
 import com.example.blog_kim_s_token.enums.priceEnums;
 import com.example.blog_kim_s_token.model.product.getPriceDto;
@@ -25,20 +28,15 @@ public class priceService {
         optional.orElseThrow(()->new IllegalAccessError("존재하지 않는 상품입니다"));
         return optional.get();
     }
-    public JSONObject responeTotalprice(getPriceDto getPriceDto) {
+    public int responeTotalprice(String  productName,int count) {
         System.out.println("responeTotalprice");
-        productDto productDto=selectProduct(getPriceDto.getProductName());
-        JSONObject jsonObject=new JSONObject();
-        priceEnums priceEnums=confrimProduct(productDto, getPriceDto.getCount());
+        productDto productDto=selectProduct(productName);
+        priceEnums priceEnums=confrimProduct(productDto, count);
         
         if(priceEnums.gettotalPrice()==errorPrice){
-            jsonObject.put("totalPrice", errorPrice);
-            jsonObject.put("messege", priceEnums.getMessege());
-        }else{
-            jsonObject.put("price",productDto.getPrice());
-            jsonObject.put("totalPrice",getTotalPrice(productDto.getPrice(),getPriceDto.getCount()));
+            throw new RuntimeException(priceEnums.getMessege());
         }
-        return jsonObject;
+        return getTotalPrice(productDto.getPrice(),count);
     }
     private priceEnums confrimProduct(productDto productDto,int count) {
         System.out.println("confrimProduct");
