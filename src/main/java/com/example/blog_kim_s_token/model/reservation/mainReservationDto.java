@@ -43,9 +43,6 @@ public class mainReservationDto {
     @Column(name="paymentId")
     private String paymentId;
 
-    @Column(name="mainpaymentId")
-    private String mainpgpaymentId;
-
     @Column(name="rDate")
     private Timestamp rDate;
 

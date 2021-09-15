@@ -305,6 +305,12 @@ public class paymentService {
                 reseponseSettleDto.setVtlAcntNo(new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8"));
                 vbankService.insertVbank(reseponseSettleDto);
             }
+            if(reseponseSettleDto.getMchtTrdNo().startsWith(aboutPayEnums.reservation.getString())){
+                System.out.println("예약 상품 검증완료");
+                reservationService.tempToMain(reseponseSettleDto);
+            }else {
+                System.out.println("일반 상품 검증완료");
+            }
         
         } catch (Exception e) {
             e.printStackTrace();

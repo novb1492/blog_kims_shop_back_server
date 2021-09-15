@@ -6,5 +6,5 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface tempReservationDao extends JpaRepository<tempReservationDto,Integer> {
-    //Optional<List<tempReservationDto>>findByTrpaymentId(String trpayment_id);
+    Optional<List<tempReservationDto>>findByTrPaymentid(String trpayment_id);
 }

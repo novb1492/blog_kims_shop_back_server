@@ -180,23 +180,20 @@ public class reservationService {
     public void tempToMain(reseponseSettleDto reseponseSettleDto) {
         System.out.println("tempToMain");
         try {
-           /* List<tempReservationDto>tempReservationDtos=tempReservationDao.findByTrpaymentId(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalActionException("주문요청을 찾을 수없습니다"));
+           List<tempReservationDto>tempReservationDtos=tempReservationDao.findByTrPaymentid(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalActionException("주문요청을 찾을 수없습니다"));
            for(tempReservationDto t: tempReservationDtos){
-                mainReservationDto dto=mainReservationDto.builder().dateAndTime(t.getTrDateAndTime())
-                .email(t.getTrEmail())
-                .mainpgpaymentId(reseponseSettleDto.getTrdNo())
-                .name(t.getTrName())
-                .paymentId(t.getTrPaymentid())
-                .rDate(t.getTrRdate())
-                .seat(t.getTrSeat())
-                .status("paid")
-                .time(t.getTrTime())
-                .usedPayKind(reseponseSettleDto.getCardNm())
-                .build();
-                reservationDao.save(dto);
-                tempReservationDao.delete(t);
+                mainReservationDto dto=mainReservationDto.builder()
+                                        .dateAndTime(t.getTrDateAndTime())
+                                        .email(t.getTrEmail())
+                                        .name(t.getTrName())
+                                        .paymentId(t.getTrPaymentid())
+                                        .seat(t.getTrSeat())
+                                        .time(t.getTrTime())
+                                        .build();
+                                        reservationDao.save(dto);
+                                        tempReservationDao.delete(t);
            }
-         */
+        
 
             
         }catch (IllegalActionException e){
