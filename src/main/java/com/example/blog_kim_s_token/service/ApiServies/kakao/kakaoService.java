@@ -17,7 +17,6 @@ import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.payment.paymentService;
-import com.example.blog_kim_s_token.service.payment.iamPort.nomalPayment;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -235,14 +234,14 @@ public class kakaoService {
             JSONObject response=requestToKakao(approveUrl);
             System.out.println(response+" 카카오페이 결제완료");
             String usedKind=aboutPayEnums.kakaoPay.getString();
-            nomalPayment nomalPayment=new nomalPayment();
+           /* nomalPayment nomalPayment=new nomalPayment();
             nomalPayment.setKind(kind);
             nomalPayment.setEmail(email);
             nomalPayment.setPayMethod(usedKind);
             nomalPayment.setPaymentid(paymentid);
             nomalPayment.setStatus(status);
             nomalPayment.setUsedKind(usedKind);
-            nomalPayment.setName(name);
+            nomalPayment.setName(name);*/
             //paymentService.insertPayment(nomalPayment,totalPrice);
             if(kind.equals(aboutPayEnums.reservation.getString())){
                 System.out.println("예약 상품 결제");

@@ -15,8 +15,6 @@ import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.enums.reservationEnums;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.reservation.*;
-import com.example.blog_kim_s_token.model.user.userDto;
-import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.payment.paymentService;
 import com.nimbusds.jose.shaded.json.JSONObject;
@@ -47,8 +45,7 @@ public class reservationService {
     private paymentService paymentService;
     @Autowired
     private tempReservationDao tempReservationDao;
-    @Autowired
-    private userService userService;
+
 
 
 

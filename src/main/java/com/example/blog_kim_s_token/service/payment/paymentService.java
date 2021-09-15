@@ -27,7 +27,6 @@ import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.model.card.cardService;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDao;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
-import com.example.blog_kim_s_token.service.payment.model.vbank.insertvbankDto;
 import com.example.blog_kim_s_token.service.payment.model.vbank.vbankService;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
@@ -36,7 +35,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -49,8 +47,6 @@ public class paymentService {
     private HttpHeaders headers=new HttpHeaders();
     private JSONObject body=new JSONObject();
 
-    @Autowired
-    private reservationService resevationService;
     @Autowired
     private priceService priceService;
     @Value("${payment.period}")
@@ -71,6 +67,7 @@ public class paymentService {
     private vbankService vbankService;
     @Autowired
     private reservationService reservationService;
+
 
     public JSONObject  getVbankDate(getVankDateDto getVankDateDto) {
         System.out.println("getVbankDate");
@@ -287,7 +284,7 @@ public class paymentService {
         return  String.format("%s%s%s%s%s%s%s",getHashInfor.getMchtId(),getHashInfor.getMethod(),getHashInfor.getMchtTrdNo(),getHashInfor.getRequestDate(),getHashInfor.getRequestTime(),getHashInfor.getTotalPrice(),"ST1009281328226982205");
     }
     @Transactional(rollbackFor = Exception.class)
-    public void confrimSettle(reseponseSettleDto reseponseSettleDto) {
+    public JSONObject confrimSettle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("confrimSettle");
         try {
             String outStatCd=reseponseSettleDto.getOutStatCd();
@@ -312,6 +309,10 @@ public class paymentService {
             }else {
                 System.out.println("일반 상품 검증완료");
             }
+            JSONObject jsonObject=new JSONObject();
+            jsonObject.put("bool", true);
+            jsonObject.put("messege", "완료되었습니다");
+            return jsonObject;
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("confrimSettle error"+e.getMessage());

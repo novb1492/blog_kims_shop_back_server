@@ -11,6 +11,7 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.example.blog_kim_s_token.jwt.jwtService;
 import com.example.blog_kim_s_token.model.article.articleDto;
 import com.example.blog_kim_s_token.model.article.getArticleDto;
 import com.example.blog_kim_s_token.model.article.insertArticleDto;
@@ -73,6 +74,8 @@ public class restcontroller {
     private boardService boardService;
     @Autowired
     private reservationService reservationService;
+    @Autowired
+    private jwtService jwtService;
 
 
     @PostMapping("/auth/confrimEmail")
@@ -257,6 +260,7 @@ public class restcontroller {
     @PostMapping("/api/getSha256Hash")
     public JSONObject getSha256Hash(@RequestBody getHashInfor getHashInfor,HttpServletRequest request,HttpServletResponse response) {
         System.out.println("getSha256Hash");
+        jwtService.makeNewAccessToken(request, response);
         return paymentService.makeTohash(getHashInfor);
     }
     @PostMapping("/api/tempInsertReservation")
@@ -273,10 +277,10 @@ public class restcontroller {
         
     }
     @PostMapping("/api/confrimSettle")
-    public void confrimSettle(@RequestBody reseponseSettleDto reseponseSettleDto,HttpServletResponse response) {
+    public JSONObject confrimSettle(@RequestBody reseponseSettleDto reseponseSettleDto,HttpServletResponse response) {
         System.out.println("confrimSettle");
         System.out.println(reseponseSettleDto.toString());
-        paymentService.confrimSettle(reseponseSettleDto);
+        return paymentService.confrimSettle(reseponseSettleDto);
     }
     @PostMapping("/api/v1/user/test")
     public JSONObject  user(HttpServletRequest request,HttpServletResponse response) {
