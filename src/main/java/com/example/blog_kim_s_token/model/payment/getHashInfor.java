@@ -2,7 +2,6 @@ package com.example.blog_kim_s_token.model.payment;
 
 import java.util.List;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -14,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class getHashInfor {
 
 
-
+    ///상품구매시 필수로 받아야한느것들
     @Size(min = 0,message = "수량이 0보다 작습니다")
     private String[][] productNameAndCount;
 
