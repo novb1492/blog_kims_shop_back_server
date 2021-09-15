@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,11 +13,10 @@ import lombok.NoArgsConstructor;
 @Data
 public class getHashInfor {
 
-    @NotBlank(message = "제품명이 없습니다")
-    private String productName;
 
-    @Min(value = 0,message = "수량이 0보다 작습니다")
-    private int count;
+
+    @Size(min = 0,message = "수량이 0보다 작습니다")
+    private String[][] productNameAndCount;
 
     @NotBlank(message = "mchtId가 공백입니다")
     private String mchtId;

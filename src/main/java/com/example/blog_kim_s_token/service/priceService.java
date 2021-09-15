@@ -23,15 +23,21 @@ public class priceService {
         optional.orElseThrow(()->new IllegalAccessError("존재하지 않는 상품입니다"));
         return optional.get();
     }
-    public int responeTotalprice(String  productName,int count) {
+    public int responeTotalprice(String[][] productNameAndCount) {
         System.out.println("responeTotalprice");
-        productDto productDto=selectProduct(productName);
-        priceEnums priceEnums=confrimProduct(productDto, count);
-        
-        if(priceEnums.gettotalPrice()==errorPrice){
-            throw new RuntimeException(priceEnums.getMessege());
+        int totalPrice=0;
+        int count=0;
+        for(int i=0;i<productNameAndCount.length;i++){
+                System.out.println(productNameAndCount[i][0]+" 상품이름");
+                productDto productDto=selectProduct(productNameAndCount[i][0]);
+                count=Integer.parseInt(productNameAndCount[i][1]);
+                priceEnums priceEnums=confrimProduct(productDto,count);
+                if(priceEnums.gettotalPrice()==errorPrice){
+                    throw new RuntimeException(priceEnums.getMessege());
+                }
+                totalPrice+=getTotalPrice(productDto.getPrice(),count);
         }
-        return getTotalPrice(productDto.getPrice(),count);
+        return totalPrice;
     }
     private priceEnums confrimProduct(productDto productDto,int count) {
         System.out.println("confrimProduct");

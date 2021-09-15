@@ -18,10 +18,8 @@ import com.example.blog_kim_s_token.model.article.insertArticleDto;
 import com.example.blog_kim_s_token.model.confrim.emailCofrimDto;
 import com.example.blog_kim_s_token.model.confrim.phoneCofrimDto;
 import com.example.blog_kim_s_token.model.payment.getHashInfor;
-import com.example.blog_kim_s_token.model.payment.getVankDateDto;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.payment.tryCanclePayDto;
-import com.example.blog_kim_s_token.model.product.getPriceDto;
 import com.example.blog_kim_s_token.model.reservation.getDateDto;
 import com.example.blog_kim_s_token.model.reservation.getTimeDto;
 import com.example.blog_kim_s_token.model.user.addressDto;
@@ -30,7 +28,6 @@ import com.example.blog_kim_s_token.model.user.pwdDto;
 import com.example.blog_kim_s_token.model.user.singupDto;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.boardService;
-import com.example.blog_kim_s_token.service.priceService;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
@@ -63,8 +60,6 @@ public class restcontroller {
     private kakaoService kakaoService;
     @Autowired
     private reservationService resevationService;
-    @Autowired
-    private priceService priceService;
     @Autowired
     private fileUploadService fileUploadService;
     @Autowired

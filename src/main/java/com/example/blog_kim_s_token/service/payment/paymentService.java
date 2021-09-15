@@ -231,7 +231,7 @@ public class paymentService {
             System.out.println(kind); 
             userDto userDto=userService.sendUserDto();
             String email=userDto.getEmail();
-            String price=Integer.toString(priceService.responeTotalprice(getHashInfor.getProductName(), getHashInfor.getCount()));
+            String price=Integer.toString(priceService.responeTotalprice(getHashInfor.getProductNameAndCount()));
             getHashInfor.setTotalPrice(price);
             Map<String,String>map=utillService.getTrdDtTrdTm();
             String mchtTrdNo=kind+utillService.GetRandomNum(10);
