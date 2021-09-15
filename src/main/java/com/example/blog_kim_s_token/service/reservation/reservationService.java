@@ -238,11 +238,12 @@ public class reservationService {
         System.out.println("confrimInsert");
       
             List<mainReservationDto>array=reservationDao.findByEmailNative(reservationInsertDto.getEmail(),reservationInsertDto.getSeat());
+            System.out.println(array.isEmpty());
             List<Integer>times=reservationInsertDto.getTimes();
             if(reservationInsertDto.getTimes().size()<=0){
                 System.out.println("몇시간 쓸지 선택 되지 않음");
                 throw new RuntimeException("시간을 선택하지 않았습니다");
-            }else if(array!=null){
+            }else if(array.isEmpty()==false){
                 System.out.println(array.toString()+" 내역들");
                 for(mainReservationDto m:array){
                     for(int i:times){
@@ -262,7 +263,8 @@ public class reservationService {
                     }
                 }
             }
-            if(reservationInsertDto.getStatus().equals(aboutPayEnums.statusReady.getString())){
+
+            if(reservationInsertDto.getMchtCustId().equals(aboutPayEnums.vbankmehthod.getString())){
                 paymentService.checkTime(reservationInsertDto.getYear(),reservationInsertDto.getMonth(),reservationInsertDto.getDate(),times.get(0));
             }
     }

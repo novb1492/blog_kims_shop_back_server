@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface tempPaidDao extends JpaRepository<tempPaidDto,Integer> {
    Optional<tempPaidDto>findByTpaymentid(String mchtTrdNo);
+
+   void deleteByTpaymentid(String paymnetid);
 }

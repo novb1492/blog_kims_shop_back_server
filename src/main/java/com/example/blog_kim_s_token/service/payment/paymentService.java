@@ -258,7 +258,7 @@ public class paymentService {
                                         tempPaidDao.save(dto);
             if(kind.equals(aboutPayEnums.reservation.getString())){
                 System.out.println("예약 임시 테이블 저장");
-                
+               
                 reservationInsertDto dto2=reservationInsertDto.builder()
                                                                 .date(getHashInfor.getDate())
                                                                 .email(email)
@@ -269,6 +269,7 @@ public class paymentService {
                                                                 .status("temp")
                                                                 .times(getHashInfor.getTimes())
                                                                 .year(getHashInfor.getYear())
+                                                                .mchtCustId(mchtCustId)
                                                                 .build();
                 reservationService.insertTemp(dto2);
             }else {
@@ -283,19 +284,6 @@ public class paymentService {
     }
     private String requestPayString(getHashInfor getHashInfor) {
         return  String.format("%s%s%s%s%s%s%s",getHashInfor.getMchtId(),getHashInfor.getMethod(),getHashInfor.getMchtTrdNo(),getHashInfor.getRequestDate(),getHashInfor.getRequestTime(),getHashInfor.getTotalPrice(),"ST1009281328226982205");
-    }
-    public void okSettle(reseponseSettleDto reseponseSettleDto ) {
-        System.out.println("okSettle");
-        try {
-            String mchtTrdNo=reseponseSettleDto.getMchtTrdNo();
-            if(mchtTrdNo.startsWith(aboutPayEnums.reservation.getString())){
-                System.out.println("예약 상품웹훅");
-                resevationService.tempToMain(reseponseSettleDto);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("okSettle error"+e.getMessage());
-        }
     }
     @Transactional(rollbackFor = Exception.class)
     public void confrimSettle(reseponseSettleDto reseponseSettleDto) {
@@ -321,17 +309,26 @@ public class paymentService {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("confrimSettle error"+e.getMessage());
-            throw new failBuyException("실패했습니다",reseponseSettleDto);
+            throw new failBuyException(e.getMessage(),reseponseSettleDto);
         }
     }
     private void checkDetails(reseponseSettleDto reseponseSettleDto,String email) {
         System.out.println("checkDetails");
+        String message=null;
         tempPaidDto tempPaidDto=tempPaidDao.findByTpaymentid(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalActionException("결제 요청 정보가 없습니다"));
         if(!tempPaidDto.getTpemail().equals(email)){
             System.out.println("이메일이 다름");
+            message="이메일이 다름";
         }else if(!tempPaidDto.getTpprice().equals(reseponseSettleDto.getTrdAmt())){
             System.out.println("결제금액이 다릅니다");
+            message="결제금액이 다릅니다";
+        }else{
+            System.out.println("세틀뱅크 결제검증 통과");
+            tempPaidDao.deleteByTpaymentid(reseponseSettleDto.getMchtTrdNo());
+            System.out.println("임시 테이블 삭제완료");
+            return;
         }
+        throw new RuntimeException(message);
     
     }
     public void cancle(reseponseSettleDto reseponseSettleDto) {

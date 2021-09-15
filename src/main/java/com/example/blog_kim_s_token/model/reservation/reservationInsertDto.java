@@ -21,5 +21,6 @@ public class reservationInsertDto {
     private String email;
     private String status;
     private List<Integer>times;
+    private String mchtCustId;
 
 }
