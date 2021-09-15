@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
+import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.hash.aes256;
@@ -38,6 +39,7 @@ public class vbankService {
                                 .vtlAcntNo(reseponseSettleDto.getVtlAcntNo())
                                 .vtrdAmt(reseponseSettleDto.getTrdAmt())
                                 .vtrdNo(reseponseSettleDto.getTrdNo())
+                                .vbankstatus(aboutPayEnums.statusReady.getString())
                                 .build();
             vbankDao.save(dto);
                                 

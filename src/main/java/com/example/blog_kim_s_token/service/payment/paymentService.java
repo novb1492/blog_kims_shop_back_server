@@ -79,7 +79,10 @@ public class paymentService {
                 Collections.sort(getVankDateDto.getTimes());
                 int shortestTime=getVankDateDto.getTimes().get(0);
                 checkTime(getVankDateDto.getYear(),getVankDateDto.getMonth(),getVankDateDto.getDate(),shortestTime);
-                return utillService.makeJson(true,getVbankDate(diffDays, shortestTime, requestDate));
+                JSONObject dateAndTime=new JSONObject();
+                getVbankDate(diffDays, shortestTime, requestDate,dateAndTime);
+                dateAndTime.put("bool", true);
+                return dateAndTime;
             }else{
                 return utillService.makeJson(true,getVbankDate());
             }
@@ -98,15 +101,16 @@ public class paymentService {
             throw new RuntimeException("가상 계좌 제한시간은 최대 "+minusHour+"시간입니다");
         }
     }
-    private String getVbankDate(long diffDays,int shortestTime,String requestDate) {
+    private void getVbankDate(long diffDays,int shortestTime,String requestDate,JSONObject jsonObject) {
         System.out.println("getVbankDate");   
         String expiredDate=null;
+        String time=null;
         if(diffDays<period){
             System.out.println(shortestTime+" 가장작은시간");
             expiredDate=requestDate+" "+(shortestTime-minusHour)+":00:00";
             System.out.println(expiredDate+" 새로만든 기한");
             String[]temp=expiredDate.split(" ");
-            String time=temp[1];
+            time=temp[1];
             temp=temp[0].split("-");
             if(temp[1].length()<2){
                 System.out.println("10월보다작음");
@@ -119,21 +123,27 @@ public class paymentService {
             String[] splitTime=time.split(":");
             if(splitTime[0].length()<2){
                 splitTime[0]="0"+splitTime[0];
-                time=splitTime[0]+":"+splitTime[1]+":"+splitTime[2];
             }
-            expiredDate=temp[0]+"-"+temp[1]+"-"+temp[2]+" "+time;
+            time=splitTime[0]+splitTime[1]+splitTime[2];
+            expiredDate=temp[0]+temp[1]+temp[2];
+            expiredDate+=time;
  
         }else{
             System.out.println("예약 일자가 "+period+"이상임");
             expiredDate=getVbankDate();
         }
-        System.out.println(expiredDate+" 최종");
-        return expiredDate;
+        System.out.println(expiredDate+" 최종"+ time);
+        jsonObject.put("date", expiredDate);
     }
     private String getVbankDate() {
         System.out.println("getVbankDate");
         String expiredDate=LocalDateTime.now().plusDays(period).toString();
-        expiredDate=expiredDate.replace("T", " ");
+        expiredDate= expiredDate.replaceAll("[:T-]", "");
+        System.out.println(expiredDate+" afterreplace");
+        int idx = expiredDate.indexOf("."); 
+        System.out.println(idx+" aft");
+        expiredDate = expiredDate.substring(0, idx);
+        System.out.println(expiredDate+" aft");
         return expiredDate;
     }
 
