@@ -381,7 +381,7 @@ public class reservationService {
                     }else{
                         status="결제완료";
                         usedKind=m.getVfn_nm()+" "+m.getVtl_acnt_no();
-                        paidDate=m.getVexpire_dt().toString();
+                        paidDate=m.getVtrd_dtm().toString();
                         paidPrice=m.getPrice();
                     }
                    

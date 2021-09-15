@@ -57,6 +57,9 @@ public class insertvbankDto {
     @Column(name = "vexpireDt",nullable = false)
     private Timestamp vexpireDt;
 
+    @Column(name = "vtrdDtm")
+    private Timestamp vtrdDtm;
+
     @Column(name = "vbankstatus",nullable = false)
     private String vbankstatus;
 

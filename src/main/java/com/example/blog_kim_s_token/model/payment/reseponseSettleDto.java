@@ -30,4 +30,5 @@ public class reseponseSettleDto {
     private String expireDt;
     private String cphoneNo;
     private String billKey;
+    private String trdDtm;
 }
