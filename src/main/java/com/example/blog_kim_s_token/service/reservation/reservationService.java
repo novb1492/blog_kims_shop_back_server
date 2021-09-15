@@ -220,7 +220,6 @@ public class reservationService {
                                         .time(times.get(i))
                                         .seat(reservationInsertDto.getSeat())
                                         .paymentId(reservationInsertDto.getPaymentId())
-                                        .rDate(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" 00:00:00"))
                                         .dateAndTime(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" "+times.get(i)+":00:00"))
                                         .build();
                                         reservationDao.save(dto);

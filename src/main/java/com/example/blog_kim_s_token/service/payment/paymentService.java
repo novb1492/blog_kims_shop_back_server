@@ -311,7 +311,6 @@ public class paymentService {
             }else {
                 System.out.println("일반 상품 검증완료");
             }
-        
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("confrimSettle error"+e.getMessage());
