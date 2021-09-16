@@ -272,9 +272,11 @@ public class reservationService {
                     }
                 }
             }
-
-            if(reservationInsertDto.getMchtCustId().equals(aboutPayEnums.vbankmehthod.getString())){
-                paymentService.checkTime(reservationInsertDto.getYear(),reservationInsertDto.getMonth(),reservationInsertDto.getDate(),times.get(0));
+            if(reservationInsertDto.getMchtCustId()!=null){
+                System.out.println("세틀뱅크일때만 검사");
+                if(reservationInsertDto.getMchtCustId().equals(aboutPayEnums.vbankmehthod.getString())){
+                    paymentService.checkTime(reservationInsertDto.getYear(),reservationInsertDto.getMonth(),reservationInsertDto.getDate(),times.get(0));
+                }
             }
     }
     public JSONObject getClientReservation(JSONObject JSONObject) {
@@ -396,6 +398,12 @@ public class reservationService {
                         paidPrice=m.getPrice();
                     }
                    
+                }else if(m.getKtid()!=null){
+                    System.out.println("카카오페이 결제");
+                    status="결제완료";
+                    usedKind="카카오페이";
+                    paidDate=m.getK_created().toString();
+                    paidPrice=m.getPrice()+"";
                 }
                 array[temp][4]=status;
                 array[temp][5]=usedKind;

@@ -185,7 +185,7 @@ public class paymentService {
         result.put("count", count);
         return result;
     }
-    public void confrimProduct(int requestTotalPrice,int totalPrice,int count,String productName) {
+    public void confrimProduct(int count,String productName) {
         System.out.println("confrimProduct");
         String[] splitName=productName.split(",");
         int splitNameSize=splitName.length;
@@ -193,11 +193,7 @@ public class paymentService {
         for(int i=0;i<splitNameSize;i++){
            productDto productDto=priceService.selectProduct(splitName[i]);
            int remainCount=productDto.getCount();
-           if(requestTotalPrice!=totalPrice){
-               System.out.println("가격이 변조되었습니다");
-               messege="가격이 변조되었습니다";
-               break;
-           }else if(remainCount<=0||remainCount-count<=0){
+            if(remainCount<=0||remainCount-count<=0){
                System.out.println("재고 부족");
                messege="재고가 없거나 요청수량 보다 적습니다"+splitName[i];
                break;

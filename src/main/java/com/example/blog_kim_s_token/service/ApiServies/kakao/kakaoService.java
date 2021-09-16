@@ -76,6 +76,8 @@ public class kakaoService {
     private paymentService paymentService;
     @Autowired
     private reservationService resevationService;
+    @Autowired
+    private kakaopayService kakaopayService;
 
     
     public String kakaoGetLoginCode() {
@@ -174,7 +176,7 @@ public class kakaoService {
             String itemName=(String)result.get("itemName");
             int count=(int)result.get("count");
             List<Integer>timesOrSize=(List<Integer>)result.get("timesOrSize");
-            paymentService.confrimProduct(tryKakaoPayDto.getTotalPrice(),totalPrice,count,itemName);
+            paymentService.confrimProduct(count,itemName);
             System.out.println(itemName+"/"+count);
             String partner_order_id=utillService.GetRandomNum(10);
             userDto userDto=userService.sendUserDto();
@@ -219,40 +221,34 @@ public class kakaoService {
         String[]other=(String[])httpSession.getAttribute("other");
         String email=(String)httpSession.getAttribute("email");
         String name=(String)httpSession.getAttribute("name");
-        int totalPrice=(int)httpSession.getAttribute("totalPrice");
+        int total_amount=(int)httpSession.getAttribute("totalPrice");
         String kind=(String)httpSession.getAttribute("kind");
-        String paymentid=(String)httpSession.getAttribute("tid");
+        String tid=(String)httpSession.getAttribute("tid");
         List<Integer>timesOrSize=(List<Integer>)httpSession.getAttribute("timesOrSize");
+        String partner_order_id=(String)httpSession.getAttribute("partner_order_id");
+        String tax_free_amount="0";
         try {
             body.add("cid", cid);
-            body.add("tid",paymentid);
-            body.add("partner_order_id",httpSession.getAttribute("partner_order_id"));
-            body.add("partner_user_id", httpSession.getAttribute("email"));
+            body.add("tid",tid);
+            body.add("partner_order_id",partner_order_id);
+            body.add("partner_user_id", email);
             body.add("quantity",httpSession.getAttribute("count"));
             body.add("pg_token", pgToken);
             headers.add("Authorization","KakaoAK "+adminKey);
             JSONObject response=requestToKakao(approveUrl);
             System.out.println(response+" 카카오페이 결제완료");
             String usedKind=aboutPayEnums.kakaoPay.getString();
-           /* nomalPayment nomalPayment=new nomalPayment();
-            nomalPayment.setKind(kind);
-            nomalPayment.setEmail(email);
-            nomalPayment.setPayMethod(usedKind);
-            nomalPayment.setPaymentid(paymentid);
-            nomalPayment.setStatus(status);
-            nomalPayment.setUsedKind(usedKind);
-            nomalPayment.setName(name);*/
-            //paymentService.insertPayment(nomalPayment,totalPrice);
+            kakaopayService.kakaopayInsert(cid, partner_order_id, email, tax_free_amount, tid, total_amount);
             if(kind.equals(aboutPayEnums.reservation.getString())){
                 System.out.println("예약 상품 결제");
-                resevationService.doReservation(email,name, paymentid, itemArray, other,timesOrSize,status,usedKind);
+                resevationService.doReservation(email,name, tid, itemArray, other,timesOrSize,status,usedKind);
             }else if(kind.equals(aboutPayEnums.product.getString())){
                 System.out.println("상품결제");
             }
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("insertPaymentForkakao error"+e.getMessage());
-            throw new failKakaoPay(e.getMessage(),cid,paymentid,totalPrice);
+            throw new failKakaoPay(e.getMessage(),cid,tid,total_amount);
         }
     }  
     public void  cancleKakaopay(MultiValueMap<String,Object> body2) {

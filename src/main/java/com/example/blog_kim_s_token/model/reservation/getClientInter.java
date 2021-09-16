@@ -23,6 +23,9 @@ public interface getClientInter {
     String getCid();
     String getCfn_nm();
     Timestamp getC_created();
+    //kakaopay
+    String getKtid();
+    Timestamp getK_created(); 
 
 
 
