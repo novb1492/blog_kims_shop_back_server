@@ -132,7 +132,8 @@ public class restcontroller {
     @PostMapping("/api/logout")
     public JSONObject logout(HttpServletRequest request,HttpServletResponse response) {
         System.out.println("logout");
-        return userService.logout(request,response);
+        userService.logout(request, response);
+        return utillService.makeJson(true, "로그아웃완료");
     }
     @PostMapping("/api/updateAddress")
     public JSONObject updateAddress(@Valid @RequestBody addressDto addressDto,HttpServletResponse response) {

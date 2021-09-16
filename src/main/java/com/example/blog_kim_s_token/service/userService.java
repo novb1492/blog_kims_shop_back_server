@@ -2,6 +2,7 @@ package com.example.blog_kim_s_token.service;
 
 
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
@@ -37,6 +38,9 @@ public class userService {
     private final int yes=1;
     @Value("${jwt.refreshToken.name}")
     private String refreshTokenName;
+
+    @Value("${jwt.accessToken.name}")
+    private String accessTokenName;
     
     @Autowired
     private userDao userDao;
@@ -110,10 +114,22 @@ public class userService {
         System.out.println("updatePwd 입장");
         userDao.updatePwd(security.pwdEncoder().encode(pwd), email);
     }
-    public JSONObject logout(HttpServletRequest request,HttpServletResponse response) {
+    public void logout(HttpServletRequest request,HttpServletResponse response) {
         System.out.println("logout 입장");
-         csrfTokenService.deleteCsrfToken(SecurityContextHolder.getContext().getAuthentication().getName());
-        return jwtService.deleteRefreshToken(request.getHeader(refreshTokenName));
+        userDto userDto=sendUserDto();
+        userDao.deleteJoin(userDto.getId());
+        Cookie[] cookies=request.getCookies();
+        for(Cookie c:cookies){
+            if(c.getName().equals(refreshTokenName)||c.getName().equals(accessTokenName)||c.getName().equals("csrfToken")){
+                System.out.println("토큰"+c.getValue());
+                Cookie cookie=new Cookie(c.getName(), null);
+                cookie.setHttpOnly(true);
+                cookie.setValue(null);
+                cookie.setPath("/");
+                cookie.setMaxAge(0);
+                response.addCookie(cookie);
+            }
+        }
     }
     public userDto sendUserDto() {
         System.out.println("sendUserDto");

@@ -6,22 +6,21 @@ import java.util.List;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 @Service
 public class cookieService {
     
     public static void cookieFactory(HttpServletResponse response,String[][] namesAndValues) {
+        System.out.println("cookieFactory");
         for(int i =0;i<namesAndValues.length;i++){
-            for(int ii=0;ii<namesAndValues[i].length;){
-                Cookie cookie=new Cookie(namesAndValues[i][ii],namesAndValues[i][ii+1]);
-                if(namesAndValues[i][ii+2]!=null&&namesAndValues[i][ii+2].equals("httponly")){
+                Cookie cookie=new Cookie(namesAndValues[i][0],namesAndValues[i][1]);
+                if(namesAndValues[i][2]!=null&&namesAndValues[i][2].equals("httponly")){
                     cookie.setHttpOnly(true);  
                 }
                 cookie.setPath("/");
-                response.addCookie(cookie);
-                break;
-            }
+                response.addCookie(cookie);      
         }
     }
     public static List<Object> openCookie(Cookie[] cookies,List<String>cookiesName) {
