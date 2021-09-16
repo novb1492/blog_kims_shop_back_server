@@ -128,12 +128,16 @@ public class utillService {
         return num;
     } 
     public static int getTotalpages(int totalCount,int pagesize) {
+        System.out.println("getTotalpages");
         int totalpage=0;
         totalpage=totalCount/pagesize;
         if(totalCount%pagesize>0){
             totalpage++;
         }
-        System.out.println(totalpage);
+        System.out.println(totalpage+"전체페이지");
+        if(totalpage==0){
+            totalpage=1;
+        }
         return totalpage;
     }
     public static int getFirst(int page,int pagesize) {

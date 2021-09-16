@@ -88,6 +88,7 @@ public class userService {
        return utillService.makeJson(confirmEnums.nullPhoneNumInDb.getBool(),confirmEnums.nullPhoneNumInDb.getMessege());
     }
     public JSONObject doLogin() {
+        System.out.println("doLogin");
         try {
             String email=SecurityContextHolder.getContext().getAuthentication().getName();
             return utillService.makeJson(true,email);

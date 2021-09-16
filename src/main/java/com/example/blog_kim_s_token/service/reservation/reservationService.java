@@ -288,7 +288,7 @@ public class reservationService {
         System.out.println("종료일"+endDate);
         try {
             JSONObject respone=new JSONObject();
-            int nowPage=(int) JSONObject.get("nowPage");
+            int nowPage=(int) JSONObject.get("nowPage")+1;
             String email=SecurityContextHolder.getContext().getAuthentication().getName();
             int totalPage=getTotalPage(email, startDate, endDate);
             reservationEnums enums=confrimDateAndPage(nowPage,totalPage,startDate,endDate);
@@ -337,7 +337,7 @@ public class reservationService {
             }else{
                 System.out.println("날짜 지정 검색");
                 fisrt=utillService.getFirst(nowPage, pagingNum);
-                dtoArray=reservationDao.findByEmailJoinOrderByIdBetweenDescNative(email,Timestamp.valueOf(startDate+" "+"00:00:00"),Timestamp.valueOf(endDate+" 00:00:00"),fisrt-1,utillService.getEnd(fisrt, pagingNum)-fisrt+1);
+                dtoArray=reservationDao.findByEmailJoinOrderByIdBetweenDescNative(email,Timestamp.valueOf(startDate+" "+"00:00:00"),Timestamp.valueOf(endDate+" 00:00:00"),fisrt-1,utillService.getEnd(fisrt, pagingNum)-fisrt+1).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
             }
         respone.put("totalPage", totalPage);
         return dtoArray;
