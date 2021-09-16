@@ -12,7 +12,6 @@ import com.example.blog_kim_s_token.config.security;
 import com.example.blog_kim_s_token.enums.confirmEnums;
 import com.example.blog_kim_s_token.enums.role;
 import com.example.blog_kim_s_token.enums.userEnums;
-import com.example.blog_kim_s_token.jwt.jwtService;
 import com.example.blog_kim_s_token.model.confrim.confrimDto;
 import com.example.blog_kim_s_token.model.user.addressDto;
 import com.example.blog_kim_s_token.model.user.phoneDto;
@@ -27,6 +26,7 @@ import com.nimbusds.jose.shaded.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,10 +48,7 @@ public class userService {
     private security security;
     @Autowired
     private confrimService confrimService;
-    @Autowired
-    private jwtService jwtService;
-    @Autowired
-    private csrfTokenService csrfTokenService;
+
 
 
     public boolean confrimEmail(String email) {
@@ -122,12 +119,13 @@ public class userService {
         for(Cookie c:cookies){
             if(c.getName().equals(refreshTokenName)||c.getName().equals(accessTokenName)||c.getName().equals("csrfToken")){
                 System.out.println("토큰"+c.getValue());
-                Cookie cookie=new Cookie(c.getName(), null);
-                cookie.setHttpOnly(true);
-                cookie.setValue(null);
-                cookie.setPath("/");
-                cookie.setMaxAge(0);
-                response.addCookie(cookie);
+                ResponseCookie cookie2 = ResponseCookie.from(c.getName(), null) 
+                                .sameSite("None") 
+                                .secure(true) 
+                                .path("/") 
+                                .maxAge(0)
+                                .build(); 
+                                response.addHeader("Set-Cookie", cookie2.toString()+";HttpOnly");
             }
         }
     }
