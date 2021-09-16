@@ -14,26 +14,13 @@ public class cookieService {
     
     public static void cookieFactory(HttpServletResponse response,String[][] namesAndValues) {
         System.out.println("cookieFactory");
-       /* ResponseCookie cookie2 = ResponseCookie.from("sameSiteCookie", "sameSiteCookieValue") 
-                .sameSite("None") 
-                .secure(true) .path("/") 
-                .build(); 
-                response.addHeader("Set-Cookie", cookie2.toString());*/
-
-
         for(int i =0;i<namesAndValues.length;i++){
             ResponseCookie cookie2 = ResponseCookie.from(namesAndValues[i][0], namesAndValues[i][1]) 
             .sameSite("None") 
             .secure(true) 
             .path("/") 
             .build(); 
-            response.addHeader("Set-Cookie", cookie2.toString()+";HttpOnly");
-                /*Cookie cookie=new Cookie(namesAndValues[i][0],namesAndValues[i][1]);
-                if(namesAndValues[i][2]!=null&&namesAndValues[i][2].equals("httponly")){
-                    cookie.setHttpOnly(true);  
-                }
-                cookie.setPath("/");
-                response.addCookie(cookie);  */    
+            response.addHeader("Set-Cookie", cookie2.toString()+";HttpOnly");  
         }
     }
     public static List<Object> openCookie(Cookie[] cookies,List<String>cookiesName) {
