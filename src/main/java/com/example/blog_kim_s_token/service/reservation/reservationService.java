@@ -233,6 +233,7 @@ public class reservationService {
                                         .time(times.get(i))
                                         .seat(reservationInsertDto.getSeat())
                                         .paymentId(reservationInsertDto.getPaymentId())
+                                        .rDate(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" 00:00:00"))
                                         .dateAndTime(Timestamp.valueOf(reservationInsertDto.getYear()+"-"+reservationInsertDto.getMonth()+"-"+reservationInsertDto.getDate()+" "+times.get(i)+":00:00"))
                                         .build();
                                         reservationDao.save(dto);
@@ -312,25 +313,13 @@ public class reservationService {
         System.out.println("confrimDate");
         String enumName="fail";
         String messege=null;
+        System.out.println(nowPage);
         if(nowPage<=0){
             System.out.println("페이지가 0보다 작거나 같습니다 ");
             messege="페이지가 0보다 작거나 같습니다";
         }else if(nowPage>totalPage){
             System.out.println("nowpage>totalpage");
             messege="전체 페이지 보다 현재 페이지가 큽니다";
-        }else if(startDate.isEmpty()&&!endDate.isEmpty()){
-            System.out.println("시작날이 없습니다 ");
-            messege="시작날이 없습니다";
-        }else if(!startDate.isEmpty()&&endDate.isEmpty()){
-            System.out.println("끝나는 날이 없습니다 ");
-            messege="끝나는 날이 없습니다";
-        }else if(!startDate.isEmpty()&&!endDate.isEmpty()){
-            if(LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE).isAfter(LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE))){
-                System.out.println("날짜 선택이 잘못되었습니다 ");
-                messege="날짜 선택이 잘못되었습니다";
-            }else{
-                enumName="yes";
-            }
         }else{
             enumName="yes";
         }
@@ -354,19 +343,16 @@ public class reservationService {
         return dtoArray;
     }
     private int  getTotalPage(String email,String startDate,String endDate) {
+        System.out.println("getTotalPage");
         if(startDate.isEmpty()&&endDate.isEmpty()){
             return utillService.getTotalpages(reservationDao.countByEmail(email), pagingNum);
-        }else{
+        }else if(!startDate.isEmpty()&&!endDate.isEmpty()){
             return utillService.getTotalpages(reservationDao.countByEmailNative(email,Timestamp.valueOf(startDate+" "+"00:00:00"),Timestamp.valueOf(endDate+" 00:00:00")), pagingNum);
-        
         }
+        throw new RuntimeException("날짜 선택이 잘못되었습니다");
     }
     private String[][] makeResponse(JSONObject jsonObject,List<getClientInter>dtoArray) {
         System.out.println("makeResponse");
-        for(int i=0;i<dtoArray.size();i++){
-            System.out.println(dtoArray.get(i).getId());
-        }
-       
         String[][] array=new String[dtoArray.size()][9];
         String status=null;
         String usedKind=null;
@@ -415,10 +401,6 @@ public class reservationService {
                 }
                 temp++;
             }
-        for(String s:array[0]){
-            System.out.println(s);
-        }
-  
         return array;
     }
     private void confrimCancle(Timestamp dateAndTime,String remail) {
