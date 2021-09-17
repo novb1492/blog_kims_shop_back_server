@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import com.example.blog_kim_s_token.customException.failBuyException;
+import com.example.blog_kim_s_token.customException.failCancleException;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
@@ -403,7 +404,7 @@ public class paymentService {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("cancel error"+e.getMessage());
-            throw new RuntimeException(e.getMessage());
+            throw new failCancleException(e.getMessage());
         }
     }
     private void deleteReservationDb(List<getClientInter>clientInters) {

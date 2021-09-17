@@ -121,19 +121,19 @@ public class vbankService {
         String pain=String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,price,"ST1009281328226982205"); 
         return  pain;
     }
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void okVank(reseponseSettleDto reseponseSettleDto) {
         System.out.println("okVank");
-        try {
             String trdDtm=reseponseSettleDto.getTrdDtm();
             trdDtm=trdDtm.substring(0, 4)+"-"+trdDtm.substring(4, 6)+"-"+trdDtm.substring(6, 8)+" "+trdDtm.substring(8,10)+":"+trdDtm.substring(10,12)+":"+trdDtm.substring(12,14);
             System.out.println(trdDtm+" 날짜");
             insertvbankDto insertvbankDto=vbankDao.findByVmchtTrdNo(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalAccessError("vbank에 내역이 존재 하지 않습니다"));
-            insertvbankDto.setVbankstatus(aboutPayEnums.statusPaid.getString()); 
-            insertvbankDto.setVtrdDtm(Timestamp.valueOf(trdDtm));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            if(insertvbankDto.getVbankstatus().equals(aboutPayEnums.statusReady.getString())){
+                System.out.println("vbank 입금확인처리 ");
+                insertvbankDto.setVbankstatus(aboutPayEnums.statusPaid.getString()); 
+                insertvbankDto.setVtrdDtm(Timestamp.valueOf(trdDtm));
+            }
+       
     }
     public insertvbankDto updateVBankPay(int newPrice,String vid) {
         System.out.println("updateVBankPay");
