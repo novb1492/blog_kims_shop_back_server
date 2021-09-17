@@ -52,12 +52,14 @@ public class cardService {
         params.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
         params.put("trdDt", map.get("trdDt"));
         params.put("trdTm",map.get("trdTm"));
+        data.put("cnclOrd", "002");
         data.put("pktHash", sha256.encrypt(pktHash));
         data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
         data.put("crcCd", "KRW");
         data.put("cnclAmt", aes256.encrypt(reseponseSettleDto.getTrdAmt()));
         body.put("params", params);
         body.put("data", data);
+       
         return body;
     }
     public void updateCardPay(int newPrice,String cid) {
