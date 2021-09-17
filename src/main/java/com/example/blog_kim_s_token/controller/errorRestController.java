@@ -84,7 +84,7 @@ public class errorRestController {
     @ExceptionHandler(failBuyException.class)
     public JSONObject failBuyException(failBuyException failBuyException,HttpServletResponse response) {
         System.out.println("failBuyException");
-        paymentService.cancle(failBuyException.getReseponseSettleDtod());
+        paymentService.requestCancle(failBuyException.getReseponseSettleDtod());
         return utillService.makeJson(false, failBuyException.getMessage());
     }
 }

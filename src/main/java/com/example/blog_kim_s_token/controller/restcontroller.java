@@ -36,6 +36,7 @@ import com.example.blog_kim_s_token.service.ApiServies.naver.naverLoginService;
 import com.example.blog_kim_s_token.service.confrim.confrimService;
 import com.example.blog_kim_s_token.service.fileUpload.fileUploadService;
 import com.example.blog_kim_s_token.service.payment.paymentService;
+import com.example.blog_kim_s_token.service.payment.model.cancle.tryCancleDto;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -186,9 +187,9 @@ public class restcontroller {
         doRedirect(response,"https://localhost:8443/doneKakaoPagevar1.html?nextUrl=showReservationPage.html");
     }
     @PostMapping("/api/canclePay")
-    public void canclePay( @RequestBody tryCanclePayDto tryCanclePayDto,HttpServletRequest request,HttpServletResponse response) {
+    public JSONObject canclePay(@Valid @RequestBody tryCancleDto tryCancleDto,HttpServletRequest request,HttpServletResponse response) {
         System.out.println("canclePay"); 
-   
+        return paymentService.cancel(tryCancleDto);
     }
     @PostMapping("/api/imageUpload")
     public JSONObject imageUpload(@RequestParam("file")MultipartFile multipartFile,HttpServletRequest request,HttpServletResponse response) {

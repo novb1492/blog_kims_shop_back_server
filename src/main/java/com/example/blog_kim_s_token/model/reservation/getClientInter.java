@@ -22,10 +22,15 @@ public interface getClientInter {
     //CARD
     String getCid();
     String getCfn_nm();
+    String getCmcht_trd_no();
     Timestamp getC_created();
+    int getCtrd_amt();
+    String getCmcht_id();
+    String getCtrd_no();
     //kakaopay
     String getKtid();
     Timestamp getK_created(); 
+    int getKtotal_amount();
 
 
 

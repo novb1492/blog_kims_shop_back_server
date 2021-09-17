@@ -403,6 +403,24 @@ public class reservationService {
             }
         return array;
     }
+    public List<getClientInter> confrimCancleReservation(List<Integer>ids) {
+        System.out.println("cancleReservation");
+        try {
+            List<getClientInter>clientInters=new ArrayList<>();
+            String email=SecurityContextHolder.getContext().getAuthentication().getName();
+            for(int id:ids){
+                getClientInter clientInter=reservationDao.findByIdJoinNative(id).orElseThrow(()->new IllegalAccessException("존재하지 않는 예약내역입니다"));
+                confrimCancle(clientInter.getDate_and_time(), email);
+                clientInters.add(clientInter);
+                reservationDao.deleteById(id);
+            }
+           return clientInters;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("cancleReservation error"+e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
+    }
     private void confrimCancle(Timestamp dateAndTime,String remail) {
         System.out.println("confrimCancle");
         String messege=null;
@@ -417,4 +435,5 @@ public class reservationService {
         }
        throw new RuntimeException(messege);
     }
+
 }
