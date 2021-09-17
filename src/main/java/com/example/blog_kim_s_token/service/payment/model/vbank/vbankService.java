@@ -89,7 +89,6 @@ public class vbankService {
         try {
             Map<String,String>map=utillService.getTrdDtTrdTm();
             String pktHash=requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getCnclAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
-            userDto userDto=userService.sendUserDto();
             JSONObject body=new JSONObject();
             JSONObject params=new JSONObject();
             JSONObject data=new JSONObject();
@@ -104,10 +103,11 @@ public class vbankService {
             data.put("pktHash", sha256.encrypt(pktHash));
             data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
             data.put("crcCd","KRW");
+            data.put("cnclOrd",reseponseSettleDto.getCnclOrd());
             data.put("cnclAmt",aes256.encrypt(reseponseSettleDto.getCnclAmt()));
             data.put("refundBankCd",reseponseSettleDto.getRefundBankCd());
             data.put("refundAcntNo",aes256.encrypt(reseponseSettleDto.getRefundAcntNo()));
-            data.put("refundDpstrNm",userDto.getName());
+            data.put("refundDpstrNm","김준영");
             body.put("params", params);
             body.put("data", data);
         return body;
@@ -135,24 +135,25 @@ public class vbankService {
             e.printStackTrace();
         }
     }
-    public void updateVBankPay(int newPrice,String vid,reseponseSettleDto reseponseSettleDto) {
+    public insertvbankDto updateVBankPay(int newPrice,String vid) {
         System.out.println("updateVBankPay");
         try {
             int id=Integer.parseInt(vid);
+            System.out.println(id+" 아이디");
             insertvbankDto insertvbankDto=vbankDao.findById(id).orElseThrow(()->new IllegalAccessException("vbank 내역이 존재 하지 않습니다"));
             int cnclOrd=insertvbankDto.getVcnclOrd();
+            System.out.println(cnclOrd+"환불횟수"+insertvbankDto.toString());
             cnclOrd+=1;
+            insertvbankDto.setVcnclOrd(cnclOrd);
             if(newPrice>0){
                 System.out.println("환불 잔액"+newPrice);
-                insertvbankDto.setVcnclOrd(cnclOrd);
-                insertvbankDto.setVtrdAmt(Integer.toString(newPrice));
+                vbankDao.updateVbankcnclOrdNative(cnclOrd,id);
             }else{
                 System.out.println("환불 잔액 0"+newPrice);
                 vbankDao.deleteById(id);
             }
-            reseponseSettleDto.setRefundBankCd(insertvbankDto.getVfnCd());
-            reseponseSettleDto.setRefundAcntNo(insertvbankDto.getVtlAcntNo());
-            reseponseSettleDto.setCnclOrd(cnclOrd);
+            System.out.println(cnclOrd);
+            return insertvbankDto;
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             System.out.println("updateCardPay error"+e.getMessage());

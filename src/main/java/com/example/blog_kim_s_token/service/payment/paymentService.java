@@ -28,6 +28,7 @@ import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.model.cancle.tryCancleDto;
 import com.example.blog_kim_s_token.service.payment.model.card.cardService;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
+import com.example.blog_kim_s_token.service.payment.model.vbank.insertvbankDto;
 import com.example.blog_kim_s_token.service.payment.model.vbank.vbankService;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
@@ -422,7 +423,10 @@ public class paymentService {
                     System.out.println("가상계좌로 결제된 상품 취소");
                     newPrice=minusPrice(Integer.parseInt(g.getVtrd_amt()), Integer.parseInt(g.getPrice()));
                     reseponseSettleDto reseponseSettleDto=vbankService.getClientInterToDto(g);
-                    vbankService.updateVBankPay(newPrice, g.getVid(),reseponseSettleDto);
+                    insertvbankDto insertvbankDto=vbankService.updateVBankPay(newPrice, g.getVid());
+                    reseponseSettleDto.setCnclOrd(insertvbankDto.getVcnclOrd());
+                    reseponseSettleDto.setRefundBankCd(insertvbankDto.getVfnCd());
+                    reseponseSettleDto.setRefundAcntNo(insertvbankDto.getVtlAcntNo());
                     requestCancle(reseponseSettleDto);
                 }else if(g.getKtid()!=null){
                     System.out.println("카카오페이로 결제한 상품 취소");
