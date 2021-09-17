@@ -144,10 +144,9 @@ public class vbankService {
             int cnclOrd=insertvbankDto.getVcnclOrd();
             System.out.println(cnclOrd+"환불횟수"+insertvbankDto.toString());
             cnclOrd+=1;
-            insertvbankDto.setVcnclOrd(cnclOrd);
             if(newPrice>0){
                 System.out.println("환불 잔액"+newPrice);
-                vbankDao.updateVbankcnclOrdNative(cnclOrd,id);
+                insertvbankDto.setVcnclOrd(cnclOrd);
             }else{
                 System.out.println("환불 잔액 0"+newPrice);
                 vbankDao.deleteById(id);
