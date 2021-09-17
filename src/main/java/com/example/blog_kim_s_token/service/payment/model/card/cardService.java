@@ -31,6 +31,7 @@ public class cardService {
                                 .cmethod(reseponseSettleDto.getMethod())
                                 .ctrdAmt(reseponseSettleDto.getTrdAmt())
                                 .ctrdNo(reseponseSettleDto.getTrdNo())
+                                .CcnclOrd(0)
                                 .build();
                                 cardDao.save(dto);
         } catch (Exception e) {
@@ -52,7 +53,7 @@ public class cardService {
         params.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
         params.put("trdDt", map.get("trdDt"));
         params.put("trdTm",map.get("trdTm"));
-        data.put("cnclOrd", "002");
+        data.put("cnclOrd", reseponseSettleDto.getCnclOrd());
         data.put("pktHash", sha256.encrypt(pktHash));
         data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
         data.put("crcCd", "KRW");
@@ -62,18 +63,22 @@ public class cardService {
        
         return body;
     }
-    public void updateCardPay(int newPrice,String cid) {
+    public int updateCardPay(int newPrice,String cid) {
         System.out.println("updateCardPay");
         try {
             int id=Integer.parseInt(cid);
+            cardDto cardDto=cardDao.findById(id).orElseThrow(()->new IllegalAccessException("카드 내역이 존재 하지 않습니다"));
+            int cnclOrd=cardDto.getCcnclOrd();
+            cnclOrd+=1;
             if(newPrice>0){
                 System.out.println("환불 잔액"+newPrice);
-                cardDto cardDto=cardDao.findById(id).orElseThrow(()->new IllegalAccessException("카드 내역이 존재 하지 않습니다"));
+                cardDto.setCcnclOrd(cnclOrd);
                 cardDto.setCtrdAmt(Integer.toString(newPrice));
-                return;
+            }else{
+                System.out.println("환불 잔액 0"+newPrice);
+                cardDao.deleteById(id);
             }
-            System.out.println("환불 잔액 0"+newPrice);
-            cardDao.deleteById(id);
+            return cnclOrd;
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             System.out.println("updateCardPay error"+e.getMessage());

@@ -37,6 +37,9 @@ public class cardDto {
     @Column(name = "cmchtTrdNo",nullable = false)
     private String cmchtTrdNo;
 
+    @Column(name = "CcnclOrd")
+    private int CcnclOrd;
+
     @Column(name = "ctrdNo",nullable = false)
     private String ctrdNo;
 

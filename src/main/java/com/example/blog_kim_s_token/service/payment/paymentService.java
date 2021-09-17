@@ -407,14 +407,16 @@ public class paymentService {
     }
     private void deleteReservationDb(List<getClientInter>clientInters) {
         System.out.println("deleteDb");
+        int cnclOrd=0;
+        int newPrice=0;
         try {
-            int newPrice=0;
             for(getClientInter g:clientInters){
                 if(g.getCid()!=null){
                     System.out.println("카드로 결제된 상품 취소");
                     newPrice=minusPrice(g.getCtrd_amt(), Integer.parseInt(g.getPrice()));
-                    cardService.updateCardPay(newPrice, g.getCid());
+                    cnclOrd=cardService.updateCardPay(newPrice, g.getCid());
                     reseponseSettleDto reseponseSettleDto=cardService.getClientInterToDto(g);
+                    reseponseSettleDto.setCnclOrd(cnclOrd);
                     requestCancle(reseponseSettleDto);
                 }else if(g.getVid()!=null){
                     System.out.println("가상계좌로 결제된 상품 취소");

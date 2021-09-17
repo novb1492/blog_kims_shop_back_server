@@ -31,4 +31,5 @@ public class reseponseSettleDto {
     private String cphoneNo;
     private String billKey;
     private String trdDtm;
+    private int cnclOrd;
 }
