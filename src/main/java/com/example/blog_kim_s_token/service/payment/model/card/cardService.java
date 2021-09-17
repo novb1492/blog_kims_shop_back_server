@@ -87,7 +87,7 @@ public class cardService {
         System.out.println("getClientInterToDto");
         reseponseSettleDto dto=new reseponseSettleDto();
         dto.setMchtTrdNo(getClientInter.getCmcht_trd_no());
-        dto.setTrdAmt(Integer.toString(getClientInter.getCtrd_amt()));
+        dto.setTrdAmt(getClientInter.getPrice());
         dto.setMchtId(getClientInter.getCmcht_id());
         dto.setTrdNo(getClientInter.getCtrd_no());
         return dto;

@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import com.example.blog_kim_s_token.customException.failBuyException;
@@ -349,15 +350,28 @@ public class paymentService {
             System.out.println(entity.getBody()+" 요청정보"+entity.getHeaders());
             JSONObject response= restTemplate.postForObject(url,entity,JSONObject.class);
             System.out.println(response+" 세틀뱅크 통신결과");
-         
+            showResponse(response);
            
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("requestToKakao error "+ e.getMessage());
+            System.out.println("requestToSettle error "+ e.getMessage());
             throw new RuntimeException("세틀뱅크 통신 실패");
         }finally{
             body.clear();
             headers.clear();
+        }
+    }
+    private void showResponse(JSONObject response) {
+        LinkedHashMap<String,Object> data=(LinkedHashMap<String,Object>) response.get("data");
+        System.out.println(data+" 세틀뱅크 통신결과");
+        if(data.get("cnclAmt")!=null){
+            System.out.println("환불 금액"+aesToNomal((String)data.get("cnclAmt")));
+            System.out.println("환불 가능 금액"+aesToNomal((String)data.get("blcAmt")));
+        }
+        LinkedHashMap<String,Object> params=(LinkedHashMap<String,Object>) response.get("params");
+        if(params.get("outStatCd").equals("0031")){
+            System.out.println("세틀 뱅크 0031 ");
+            throw new RuntimeException((String) params.get("outRsltMsg"));
         }
     }
     public void tryUpdateVbank(reseponseSettleDto reseponseSettleDto) {
@@ -388,7 +402,7 @@ public class paymentService {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("cancel error"+e.getMessage());
-            throw new RuntimeException("환불에 실패했습니다");
+            throw new RuntimeException(e.getMessage());
         }
     }
     private void deleteReservationDb(List<getClientInter>clientInters) {
