@@ -6,6 +6,9 @@ import java.util.Map;
 
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
+import com.example.blog_kim_s_token.model.reservation.getClientInter;
+import com.example.blog_kim_s_token.model.user.userDto;
+import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
@@ -22,6 +25,8 @@ public class vbankService {
     private paymentService paymentService;
     @Autowired
     private vbankDao vbankDao;
+    @Autowired
+    private userService userService;
 
     public void insertVbank(reseponseSettleDto reseponseSettleDto) {
         System.out.println("insertVbank");
@@ -40,6 +45,7 @@ public class vbankService {
                                 .vtlAcntNo(reseponseSettleDto.getVtlAcntNo())
                                 .vtrdAmt(reseponseSettleDto.getTrdAmt())
                                 .vtrdNo(reseponseSettleDto.getTrdNo())
+                                .vcnclOrd(0)///취소 요청 횟수
                                 .vbankstatus(aboutPayEnums.statusReady.getString())
                                 .build();
             vbankDao.save(dto);
@@ -51,7 +57,7 @@ public class vbankService {
             throw new RuntimeException("가상 계좌 정보 저장 실패");
         }
     }
-    public JSONObject makeBody(reseponseSettleDto reseponseSettleDto) {
+    public JSONObject makeCancleAccountBody(reseponseSettleDto reseponseSettleDto) {
         try {
             Map<String,String>map=utillService.getTrdDtTrdTm();
             String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
@@ -78,7 +84,43 @@ public class vbankService {
             throw new RuntimeException();
         }
     }
-
+    public JSONObject makeCancleBody(reseponseSettleDto reseponseSettleDto) {
+        System.out.println("makeCancleBody");
+        try {
+            Map<String,String>map=utillService.getTrdDtTrdTm();
+            String pktHash=requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getCnclAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
+            userDto userDto=userService.sendUserDto();
+            JSONObject body=new JSONObject();
+            JSONObject params=new JSONObject();
+            JSONObject data=new JSONObject();
+            params.put("mchtId", reseponseSettleDto.getMchtId());
+            params.put("ver", "0A17");
+            params.put("method", "VA");
+            params.put("bizType", "C0");
+            params.put("encCd", "23");
+            params.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
+            params.put("trdDt", map.get("trdDt"));
+            params.put("trdTm", map.get("trdTm"));
+            data.put("pktHash", sha256.encrypt(pktHash));
+            data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
+            data.put("crcCd","KRW");
+            data.put("cnclAmt",aes256.encrypt(reseponseSettleDto.getCnclAmt()));
+            data.put("refundBankCd",reseponseSettleDto.getRefundBankCd());
+            data.put("refundAcntNo",aes256.encrypt(reseponseSettleDto.getRefundAcntNo()));
+            data.put("refundDpstrNm",userDto.getName());
+            body.put("params", params);
+            body.put("data", data);
+        return body;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
+    public String requestcancleString(String mchtTrdNo,String price,String mchtId,String trdDt,String trdTm) {
+        System.out.println("requestcancleString");
+        String pain=String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,price,"ST1009281328226982205"); 
+        return  pain;
+    }
     @Transactional(rollbackFor = Exception.class)
     public void okVank(reseponseSettleDto reseponseSettleDto) {
         System.out.println("okVank");
@@ -92,5 +134,42 @@ public class vbankService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public void updateVBankPay(int newPrice,String vid,reseponseSettleDto reseponseSettleDto) {
+        System.out.println("updateVBankPay");
+        try {
+            int id=Integer.parseInt(vid);
+            insertvbankDto insertvbankDto=vbankDao.findById(id).orElseThrow(()->new IllegalAccessException("vbank 내역이 존재 하지 않습니다"));
+            int cnclOrd=insertvbankDto.getVcnclOrd();
+            cnclOrd+=1;
+            if(newPrice>0){
+                System.out.println("환불 잔액"+newPrice);
+                insertvbankDto.setVcnclOrd(cnclOrd);
+                insertvbankDto.setVtrdAmt(Integer.toString(newPrice));
+            }else{
+                System.out.println("환불 잔액 0"+newPrice);
+                vbankDao.deleteById(id);
+            }
+            reseponseSettleDto.setRefundBankCd(insertvbankDto.getVfnCd());
+            reseponseSettleDto.setRefundAcntNo(insertvbankDto.getVtlAcntNo());
+            reseponseSettleDto.setCnclOrd(cnclOrd);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            System.out.println("updateCardPay error"+e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }catch(Exception e){
+            e.printStackTrace();
+            System.out.println("updateCardPay error"+e.getMessage());
+            throw new RuntimeException("카드 내역 변경 실패");
+        }
+    }
+    public reseponseSettleDto getClientInterToDto(getClientInter getClientInter) {
+        System.out.println("getClientInterToDto");
+        reseponseSettleDto dto=new reseponseSettleDto();
+        dto.setMchtTrdNo(getClientInter.getVmcht_trd_no());
+        dto.setCnclAmt(getClientInter.getPrice());
+        dto.setMchtId(getClientInter.getVmcht_id());
+        dto.setTrdNo(getClientInter.getVtrd_no());
+        return dto;
     }
 }

@@ -420,6 +420,10 @@ public class paymentService {
                     requestCancle(reseponseSettleDto);
                 }else if(g.getVid()!=null){
                     System.out.println("가상계좌로 결제된 상품 취소");
+                    newPrice=minusPrice(Integer.parseInt(g.getVtrd_amt()), Integer.parseInt(g.getPrice()));
+                    reseponseSettleDto reseponseSettleDto=vbankService.getClientInterToDto(g);
+                    vbankService.updateVBankPay(newPrice, g.getVid(),reseponseSettleDto);
+                    requestCancle(reseponseSettleDto);
                 }else if(g.getKtid()!=null){
                     System.out.println("카카오페이로 결제한 상품 취소");
                 }
@@ -440,9 +444,16 @@ public class paymentService {
             this.body=cardService.makecancelBody(reseponseSettleDto);
             url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
         }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
-            System.out.println("가상계좌 환불");
-            this.body=vbankService.makeBody(reseponseSettleDto);
-            url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";  
+            if(false){
+                System.out.println("가상계좌 채번취소");
+                this.body=vbankService.makeCancleAccountBody(reseponseSettleDto);
+                url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";  
+            }else{
+                System.out.println("가상계좌 환불");
+                this.body=vbankService.makeCancleBody(reseponseSettleDto);
+                url="https://tbgw.settlebank.co.kr/spay/APIRefund.do";  
+            }
+     
         }
         requestToSettle(url);
     }

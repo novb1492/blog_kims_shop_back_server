@@ -18,6 +18,9 @@ public interface getClientInter {
     String getVtl_acnt_no();
     String getVtrd_amt();
     String getVbankstatus();
+    String getVmcht_trd_no();
+    String getVmcht_id();
+    String getVtrd_no();
     Timestamp getVtrd_dtm();
     //CARD
     String getCid();
