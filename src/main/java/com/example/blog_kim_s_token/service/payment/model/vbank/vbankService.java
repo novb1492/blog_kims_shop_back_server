@@ -61,7 +61,6 @@ public class vbankService {
         try {
             Map<String,String>map=utillService.getTrdDtTrdTm();
             String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
-            System.out.println(reseponseSettleDto.getVtlAcntNo());
             JSONObject body=new JSONObject();
             JSONObject params=new JSONObject();
             JSONObject data=new JSONObject();
@@ -135,7 +134,7 @@ public class vbankService {
             }
        
     }
-    public insertvbankDto updateVBankPay(int newPrice,String vid) {
+    public void updateVBankPay(int newPrice,String vid,reseponseSettleDto reseponseSettleDto) {
         System.out.println("updateVBankPay");
         try {
             int id=Integer.parseInt(vid);
@@ -147,12 +146,17 @@ public class vbankService {
             if(newPrice>0){
                 System.out.println("환불 잔액"+newPrice);
                 insertvbankDto.setVcnclOrd(cnclOrd);
+                insertvbankDto.setVtrdAmt(Integer.toString(newPrice));
+                reseponseSettleDto.setVbankFlag(true);
             }else{
                 System.out.println("환불 잔액 0"+newPrice);
                 vbankDao.deleteById(id);
             }
             System.out.println(cnclOrd);
-            return insertvbankDto;
+            reseponseSettleDto.setCnclOrd(cnclOrd);
+            reseponseSettleDto.setRefundBankCd(insertvbankDto.getVfnCd());
+            reseponseSettleDto.setRefundAcntNo(insertvbankDto.getVtlAcntNo());
+            reseponseSettleDto.setVbankStatus(insertvbankDto.getVbankstatus());
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             System.out.println("updateCardPay error"+e.getMessage());

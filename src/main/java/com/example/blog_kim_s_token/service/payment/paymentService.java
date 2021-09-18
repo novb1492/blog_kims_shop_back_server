@@ -1,6 +1,5 @@
 package com.example.blog_kim_s_token.service.payment;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +15,6 @@ import com.example.blog_kim_s_token.customException.failCancleException;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
-import com.example.blog_kim_s_token.model.payment.tryCanclePayDto;
 import com.example.blog_kim_s_token.model.product.productDto;
 import com.example.blog_kim_s_token.model.reservation.getClientInter;
 import com.example.blog_kim_s_token.model.user.userDto;
@@ -40,8 +38,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -153,6 +149,7 @@ public class paymentService {
 
    
     public int minusPrice(int totalPrice,int minusPrice) {
+        System.out.println("minusPrice");
         int newPrice=totalPrice-minusPrice;
         if(newPrice==0||newPrice>0){
             return newPrice;
@@ -273,6 +270,8 @@ public class paymentService {
                
             }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
                 System.out.println("가상계좌 채번완료");
+                reseponseSettleDto.setVbankStatus(aboutPayEnums.statusReady.getString());
+                reseponseSettleDto.setVbankFlag(false);
                 reseponseSettleDto.setVtlAcntNo(aesToNomal(reseponseSettleDto.getVtlAcntNo()));
                 vbankService.insertVbank(reseponseSettleDto);
             }
@@ -388,7 +387,8 @@ public class paymentService {
             }else if(kind.equals(aboutPayEnums.product.getString())){
                 System.out.println("일반 상품 취소검증");
             }
-            deleteReservationDb(clientInters);
+            reseponseSettleDto reseponseSettleDto=new reseponseSettleDto();
+            deleteReservationDb(clientInters,reseponseSettleDto);
             return utillService.makeJson(true, "환불 되었습니다");
         } catch (Exception e) {
             e.printStackTrace();
@@ -396,7 +396,7 @@ public class paymentService {
             throw new failCancleException(e.getMessage());
         }
     }
-    private void deleteReservationDb(List<getClientInter>clientInters) {
+    private void deleteReservationDb(List<getClientInter>clientInters,reseponseSettleDto reseponseSettleDto) {
         System.out.println("deleteDb");
         int cnclOrd=0;
         int newPrice=0;
@@ -406,17 +406,14 @@ public class paymentService {
                     System.out.println("카드로 결제된 상품 취소");
                     newPrice=minusPrice(g.getCtrd_amt(), Integer.parseInt(g.getPrice()));
                     cnclOrd=cardService.updateCardPay(newPrice, g.getCid());
-                    reseponseSettleDto reseponseSettleDto=cardService.getClientInterToDto(g);
+                    reseponseSettleDto=cardService.getClientInterToDto(g);
                     reseponseSettleDto.setCnclOrd(cnclOrd);
                     requestCancle(reseponseSettleDto);
                 }else if(g.getVid()!=null){
                     System.out.println("가상계좌로 결제된 상품 취소");
                     newPrice=minusPrice(Integer.parseInt(g.getVtrd_amt()), Integer.parseInt(g.getPrice()));
-                    reseponseSettleDto reseponseSettleDto=vbankService.getClientInterToDto(g);
-                    insertvbankDto insertvbankDto=vbankService.updateVBankPay(newPrice, g.getVid());
-                    reseponseSettleDto.setCnclOrd(insertvbankDto.getVcnclOrd());
-                    reseponseSettleDto.setRefundBankCd(insertvbankDto.getVfnCd());
-                    reseponseSettleDto.setRefundAcntNo(insertvbankDto.getVtlAcntNo());
+                    reseponseSettleDto=vbankService.getClientInterToDto(g);
+                    vbankService.updateVBankPay(newPrice, g.getVid(),reseponseSettleDto);
                     requestCancle(reseponseSettleDto);
                 }else if(g.getKtid()!=null){
                     System.out.println("카카오페이로 결제한 상품 취소");
@@ -439,7 +436,7 @@ public class paymentService {
             this.body=cardService.makecancelBody(reseponseSettleDto);
             url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
         }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
-            if(false){
+            if(reseponseSettleDto.getVbankStatus().equals(aboutPayEnums.statusReady.getString())){
                 System.out.println("가상계좌 채번취소");
                 this.body=vbankService.makeCancleAccountBody(reseponseSettleDto);
                 url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";  

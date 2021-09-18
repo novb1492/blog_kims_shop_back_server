@@ -32,7 +32,8 @@ public class reseponseSettleDto {
     private String billKey;
     private String trdDtm;
     private int cnclOrd;
-    private String vbankFlag;
+    private String vbankStatus;
+    private boolean vbankFlag;
     private String cnclAmt;
     private String refundBankCd;
     private String refundAcntNo;
