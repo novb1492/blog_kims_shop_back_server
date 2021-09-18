@@ -33,7 +33,7 @@ public class reservationService {
     private final int maxPeopleOfDay=60;
     private final int maxPeopleOfTime=6;
     private final int cantFlag=100;
-    private final int pagingNum=3;
+    private final int pagingNum=4;
 
     @Value("${payment.minusHour}")
     private  int minusHour;

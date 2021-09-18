@@ -431,14 +431,16 @@ public class paymentService {
                         }
                     }else if(!cards.get(i).getCmcht_trd_no().equals(cards.get(i-1).getCmcht_trd_no())){
                         System.out.println("이전번호와 일치하지 않음");
-                        nextMinusPrice+=Integer.parseInt(cards.get(i).getPrice());
                         cardService.updateCardPay(minusPrice, cards.get(i-1).getCid(),reseponseSettleDto);
                         cardService.getClientInterToDto(cards.get(i-1),reseponseSettleDto,minusPrice);
                         requestCancle(reseponseSettleDto);
-                        minusPrice=nextMinusPrice;
-                        cardService.updateCardPay(minusPrice, cards.get(i).getCid(),reseponseSettleDto);
-                        cardService.getClientInterToDto(cards.get(i),reseponseSettleDto,minusPrice);
-                        requestCancle(reseponseSettleDto);
+                        if(i==cardsSize-1){
+                            minusPrice=nextMinusPrice;
+                            cardService.updateCardPay(minusPrice, cards.get(i).getCid(),reseponseSettleDto);
+                            cardService.getClientInterToDto(cards.get(i),reseponseSettleDto,minusPrice);
+                            requestCancle(reseponseSettleDto);
+                        }
+                        minusPrice=Integer.parseInt(cards.get(i).getPrice());
                     }
                 }
             }

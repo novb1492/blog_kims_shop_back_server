@@ -76,7 +76,7 @@ public class cardService {
                 cardDto.setCcnclOrd(cnclOrd);
                 cardDto.setCtrdAmt(Integer.toString(originPrice-newPrice));
             }else{
-                System.out.println("환불 잔액 0"+newPrice);
+                System.out.println("환불 잔액 0");
                 cardDao.deleteById(id);
             }
             System.out.println(cnclOrd+" 취소회차");

@@ -138,6 +138,7 @@ public class utillService {
         if(totalpage==0){
             totalpage=1;
         }
+        System.out.println(totalpage+" 전체 페이지");
         return totalpage;
     }
     public static int getFirst(int page,int pagesize) {
