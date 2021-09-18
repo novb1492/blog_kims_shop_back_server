@@ -134,7 +134,7 @@ public class vbankService {
             data.put("cnclAmt",aes256.encrypt(reseponseSettleDto.getCnclAmt()));
             data.put("refundBankCd",reseponseSettleDto.getRefundBankCd());
             data.put("refundAcntNo",aes256.encrypt(reseponseSettleDto.getRefundAcntNo()));
-            data.put("refundDpstrNm","김준영");
+            data.put("refundDpstrNm",reseponseSettleDto.getUserName());
             body.put("params", params);
             body.put("data", data);
         return body;
@@ -198,6 +198,8 @@ public class vbankService {
     }
     public void getClientInterToDto(getClientInter getClientInter,reseponseSettleDto reseponseSettleDto) {
         System.out.println("getClientInterToDto");
+        userDto userDto=userService.sendUserDto();
+        reseponseSettleDto.setUserName(userDto.getName());
         reseponseSettleDto.setMchtTrdNo(getClientInter.getVmcht_trd_no());
         reseponseSettleDto.setCnclAmt(getClientInter.getPrice());
         reseponseSettleDto.setMchtId(getClientInter.getVmcht_id());

@@ -37,4 +37,5 @@ public class reseponseSettleDto {
     private String cnclAmt;
     private String refundBankCd;
     private String refundAcntNo;
+    private String userName;
 }
