@@ -169,23 +169,27 @@ public class vbankService {
             System.out.println(id+" 아이디");
             insertvbankDto insertvbankDto=vbankDao.findById(id).orElseThrow(()->new IllegalAccessException("vbank 내역이 존재 하지 않습니다"));
             int cnclOrd=insertvbankDto.getVcnclOrd();
+            String vbankStatus=insertvbankDto.getVbankstatus();//입금여부
             System.out.println(cnclOrd+"환불횟수"+insertvbankDto.toString());
             cnclOrd+=1;
             if(newPrice>0){
                 System.out.println("환불 잔액"+newPrice);
                 insertvbankDto.setVcnclOrd(cnclOrd);
                 insertvbankDto.setVtrdAmt(Integer.toString(newPrice));
-                reseponseSettleDto.setVbankFlag("true");///금액이 남았다면 부분취소
+                if(vbankStatus.equals(aboutPayEnums.statusReady.getString())){
+                    System.out.println("가상계좌 미입금 환불요청 잔액남음");
+                    reseponseSettleDto.setVbankFlag("true");///금액이 남았다면 부분취소
+                }
             }else{
                 System.out.println("환불 잔액 0"+newPrice);
-                reseponseSettleDto.setVbankFlag("false");
+                reseponseSettleDto.setVbankFlag("false");///금액이 없다면 채번취소
                 vbankDao.deleteById(id);
             }
             System.out.println(cnclOrd);
             reseponseSettleDto.setCnclOrd(cnclOrd);
             reseponseSettleDto.setRefundBankCd(insertvbankDto.getVfnCd());
             reseponseSettleDto.setRefundAcntNo(insertvbankDto.getVtlAcntNo());
-            reseponseSettleDto.setVbankStatus(insertvbankDto.getVbankstatus());
+            reseponseSettleDto.setVbankStatus(vbankStatus);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             System.out.println("updateCardPay error"+e.getMessage());

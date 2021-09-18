@@ -403,7 +403,7 @@ public class reservationService {
             }
         return array;
     }
-    public List<getClientInter> confrimCancleReservation(List<Integer>ids) {
+    public List<getClientInter> deleteReservationDb(List<Integer>ids) {
         System.out.println("cancleReservation");
         try {
             List<getClientInter>clientInters=new ArrayList<>();

@@ -383,12 +383,12 @@ public class paymentService {
             String kind=aboutPayEnums.valueOf(tryCancleDto.getKind()).getString();
             if(kind.equals(aboutPayEnums.reservation.getString())){
                 System.out.println("예약 상품 테이블 삭제");
-                clientInters=reservationService.confrimCancleReservation(cancleIds);
+                clientInters=reservationService.deleteReservationDb(cancleIds);
             }else if(kind.equals(aboutPayEnums.product.getString())){
                 System.out.println("일반 상품 취소검증");
             }
             reseponseSettleDto reseponseSettleDto=new reseponseSettleDto();
-            deleteReservationDb(clientInters,reseponseSettleDto);
+            deletePaymentDb(clientInters,reseponseSettleDto);
             return utillService.makeJson(true, "환불 되었습니다");
         } catch (Exception e) {
             e.printStackTrace();
@@ -396,7 +396,7 @@ public class paymentService {
             throw new failCancleException(e.getMessage());
         }
     }
-    private void deleteReservationDb(List<getClientInter>clientInters,reseponseSettleDto reseponseSettleDto) {
+    private void deletePaymentDb(List<getClientInter>clientInters,reseponseSettleDto reseponseSettleDto) {
         System.out.println("deleteDb");
         int newPrice=0;
         try {
@@ -412,6 +412,9 @@ public class paymentService {
                     newPrice=minusPrice(Integer.parseInt(g.getVtrd_amt()), Integer.parseInt(g.getPrice()));
                     vbankService.getClientInterToDto(g,reseponseSettleDto);
                     vbankService.updateVBankPay(newPrice, g.getVid(),reseponseSettleDto);
+                    if(reseponseSettleDto.getVbankStatus().equals(aboutPayEnums.statusReady.getString())&&reseponseSettleDto.getVbankFlag().equals("true")){
+                        System.out.println("가상계좌 입금전 부분취소 요청");
+                    }
                     requestCancle(reseponseSettleDto);
                 }else if(g.getKtid()!=null){
                     System.out.println("카카오페이로 결제한 상품 취소");
@@ -434,16 +437,10 @@ public class paymentService {
             this.body=cardService.makecancelBody(reseponseSettleDto);
             url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
         }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
-            if(reseponseSettleDto.getVbankStatus().equals(aboutPayEnums.statusReady.getString())){
-                if(reseponseSettleDto.getVbankFlag().equals("false")){
-                    System.out.println("가상계좌 채번취소");
-                    this.body=vbankService.makeCancleAccountBody(reseponseSettleDto);
-                    url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";
-                }else{
-                    System.out.println("가상계좌 채번 부분 취소 ");
-                    this.body=vbankService.makeCancleAccountBody(reseponseSettleDto);
-                    url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";
-                }
+            if(reseponseSettleDto.getVbankStatus().equals(aboutPayEnums.statusReady.getString())){///채번취소는 미입금 변경시에도 일어나야함
+                System.out.println("가상계좌 채번취소");
+                this.body=vbankService.makeCancleAccountBody(reseponseSettleDto);
+                url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";
                  
             }else{
                 System.out.println("가상계좌 환불");
