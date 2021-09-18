@@ -83,6 +83,34 @@ public class vbankService {
             throw new RuntimeException();
         }
     }
+    public JSONObject makeReAccountBody(reseponseSettleDto reseponseSettleDto) {
+        try {
+            Map<String,String>map=utillService.getTrdDtTrdTm();
+            String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
+            JSONObject body=new JSONObject();
+            JSONObject params=new JSONObject();
+            JSONObject data=new JSONObject();
+            params.put("mchtId", reseponseSettleDto.getMchtId());
+            params.put("ver", "0A17");
+            params.put("method", "VA");
+            params.put("bizType", "A0");
+            params.put("encCd", "23");
+            params.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
+            params.put("trdDt", map.get("trdDt"));
+            params.put("trdTm", map.get("trdTm"));
+            data.put("pktHash", sha256.encrypt(pktHash));
+            data.put("bankCd", reseponseSettleDto.getFnCd());
+            data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
+            data.put("vAcntNo", aes256.encrypt(reseponseSettleDto.getVtlAcntNo()));
+            data.put("acntType", "1");
+            body.put("params", params);
+            body.put("data", data);
+        return body;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
     public JSONObject makeCancleBody(reseponseSettleDto reseponseSettleDto) {
         System.out.println("makeCancleBody");
         try {
@@ -147,9 +175,10 @@ public class vbankService {
                 System.out.println("환불 잔액"+newPrice);
                 insertvbankDto.setVcnclOrd(cnclOrd);
                 insertvbankDto.setVtrdAmt(Integer.toString(newPrice));
-                reseponseSettleDto.setVbankFlag(true);
+                reseponseSettleDto.setVbankFlag("true");///금액이 남았다면 부분취소
             }else{
                 System.out.println("환불 잔액 0"+newPrice);
+                reseponseSettleDto.setVbankFlag("false");
                 vbankDao.deleteById(id);
             }
             System.out.println(cnclOrd);

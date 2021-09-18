@@ -271,7 +271,7 @@ public class paymentService {
             }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
                 System.out.println("가상계좌 채번완료");
                 reseponseSettleDto.setVbankStatus(aboutPayEnums.statusReady.getString());
-                reseponseSettleDto.setVbankFlag(false);
+                reseponseSettleDto.setVbankFlag("false");
                 reseponseSettleDto.setVtlAcntNo(aesToNomal(reseponseSettleDto.getVtlAcntNo()));
                 vbankService.insertVbank(reseponseSettleDto);
             }
@@ -437,9 +437,16 @@ public class paymentService {
             url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
         }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
             if(reseponseSettleDto.getVbankStatus().equals(aboutPayEnums.statusReady.getString())){
-                System.out.println("가상계좌 채번취소");
-                this.body=vbankService.makeCancleAccountBody(reseponseSettleDto);
-                url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";  
+                if(reseponseSettleDto.getVbankFlag().equals("false")){
+                    System.out.println("가상계좌 채번취소");
+                    this.body=vbankService.makeCancleAccountBody(reseponseSettleDto);
+                    url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";
+                }else{
+                    System.out.println("가상계좌 채번 부분 취소 ");
+                    this.body=vbankService.makeCancleAccountBody(reseponseSettleDto);
+                    url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";
+                }
+                 
             }else{
                 System.out.println("가상계좌 환불");
                 this.body=vbankService.makeCancleBody(reseponseSettleDto);
