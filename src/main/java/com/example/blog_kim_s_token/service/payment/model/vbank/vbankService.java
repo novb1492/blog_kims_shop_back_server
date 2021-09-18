@@ -83,7 +83,8 @@ public class vbankService {
             throw new RuntimeException();
         }
     }
-    public JSONObject makeReAccountBody(reseponseSettleDto reseponseSettleDto) {
+    public JSONObject getReAccount(reseponseSettleDto reseponseSettleDto) {
+        System.out.println("getReAccount");
         try {
             Map<String,String>map=utillService.getTrdDtTrdTm();
             String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));

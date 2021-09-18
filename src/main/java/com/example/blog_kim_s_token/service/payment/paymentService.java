@@ -399,8 +399,50 @@ public class paymentService {
     private void deletePaymentDb(List<getClientInter>clientInters,reseponseSettleDto reseponseSettleDto) {
         System.out.println("deleteDb");
         int newPrice=0;
+        List<getClientInter>cards=new ArrayList<>();
         try {
             for(getClientInter g:clientInters){
+                if(g.getCid()!=null){
+                    System.out.println("카드 취소 요청 카드 취소 리스트에 저장시도");
+                    cards.add(g);
+                }
+            }
+            if(!cards.isEmpty()){
+                System.out.println("카드 취소 요청 묶음 분류 시작");
+                int cardsSize=clientInters.size();
+                int minusPrice=0;
+                int nextMinusPrice=0;
+                for(int i=0;i<cardsSize;i++){
+                    if(i==0){
+                        System.out.println("카드결제 제일 처음분류 ");
+                        minusPrice+=Integer.parseInt(cards.get(i).getPrice());
+                        if(i==cardsSize-1){
+                            cardService.updateCardPay(minusPrice, cards.get(i).getCid(),reseponseSettleDto);
+                            cardService.getClientInterToDto(cards.get(i),reseponseSettleDto,minusPrice);
+                            requestCancle(reseponseSettleDto);
+                        }
+                    }else if(cards.get(i).getCmcht_trd_no().equals(cards.get(i-1).getCmcht_trd_no())){
+                        System.out.println("이전번호와 일치함");
+                        minusPrice+=Integer.parseInt(cards.get(i).getPrice());
+                        if(i==cardsSize-1){
+                            cardService.updateCardPay(minusPrice, cards.get(i).getCid(),reseponseSettleDto);
+                            cardService.getClientInterToDto(cards.get(i),reseponseSettleDto,minusPrice);
+                            requestCancle(reseponseSettleDto);
+                        }
+                    }else if(!cards.get(i).getCmcht_trd_no().equals(cards.get(i-1).getCmcht_trd_no())){
+                        System.out.println("이전번호와 일치하지 않음");
+                        nextMinusPrice+=Integer.parseInt(cards.get(i).getPrice());
+                        cardService.updateCardPay(minusPrice, cards.get(i-1).getCid(),reseponseSettleDto);
+                        cardService.getClientInterToDto(cards.get(i-1),reseponseSettleDto,minusPrice);
+                        requestCancle(reseponseSettleDto);
+                        minusPrice=nextMinusPrice;
+                        cardService.updateCardPay(minusPrice, cards.get(i).getCid(),reseponseSettleDto);
+                        cardService.getClientInterToDto(cards.get(i),reseponseSettleDto,minusPrice);
+                        requestCancle(reseponseSettleDto);
+                    }
+                }
+            }
+            /*for(getClientInter g:clientInters){
                 if(g.getCid()!=null){
                     System.out.println("카드로 결제된 상품 취소");
                     newPrice=minusPrice(g.getCtrd_amt(), Integer.parseInt(g.getPrice()));
@@ -414,13 +456,14 @@ public class paymentService {
                     vbankService.updateVBankPay(newPrice, g.getVid(),reseponseSettleDto);
                     if(reseponseSettleDto.getVbankStatus().equals(aboutPayEnums.statusReady.getString())&&reseponseSettleDto.getVbankFlag().equals("true")){
                         System.out.println("가상계좌 입금전 부분취소 요청");
+                        vbankService.getReAccount(reseponseSettleDto);
                     }
                     requestCancle(reseponseSettleDto);
                 }else if(g.getKtid()!=null){
                     System.out.println("카카오페이로 결제한 상품 취소");
                     kakaoService.requestCancleToKakaoPay(g.getKtid(), Integer.parseInt(g.getPrice()));
                 }
-            }
+            }*/
             
         } catch (Exception e) {
             e.printStackTrace();

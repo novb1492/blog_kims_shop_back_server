@@ -69,11 +69,12 @@ public class cardService {
             int id=Integer.parseInt(cid);
             cardDto cardDto=cardDao.findById(id).orElseThrow(()->new IllegalAccessException("카드 내역이 존재 하지 않습니다"));
             int cnclOrd=cardDto.getCcnclOrd();
+            int originPrice=Integer.parseInt(cardDto.getCtrdAmt());
             cnclOrd+=1;
-            if(newPrice>0){
+            if(newPrice<originPrice){
                 System.out.println("환불 잔액"+newPrice);
                 cardDto.setCcnclOrd(cnclOrd);
-                cardDto.setCtrdAmt(Integer.toString(newPrice));
+                cardDto.setCtrdAmt(Integer.toString(originPrice-newPrice));
             }else{
                 System.out.println("환불 잔액 0"+newPrice);
                 cardDao.deleteById(id);
@@ -91,10 +92,10 @@ public class cardService {
         }
         
     }
-    public void getClientInterToDto(getClientInter getClientInter,reseponseSettleDto reseponseSettleDto) {
+    public void getClientInterToDto(getClientInter getClientInter,reseponseSettleDto reseponseSettleDto,int minusPrice) {
         System.out.println("getClientInterToDto");
         reseponseSettleDto.setMchtTrdNo(getClientInter.getCmcht_trd_no());
-        reseponseSettleDto.setTrdAmt(getClientInter.getPrice());
+        reseponseSettleDto.setTrdAmt(Integer.toString(minusPrice));
         reseponseSettleDto.setMchtId(getClientInter.getCmcht_id());
         reseponseSettleDto.setTrdNo(getClientInter.getCtrd_no());
     }

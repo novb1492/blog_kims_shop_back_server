@@ -360,7 +360,7 @@ public class reservationService {
         String paidPrice=null;
             int temp=0;
             for(getClientInter m:dtoArray){
-                array[temp][0]=Integer.toString(m.getId());
+                array[temp][0]=m.getId();
                 array[temp][1]=m.getSeat();
                 array[temp][2]=m.getCreated().toString();
                 array[temp][3]=m.getDate_and_time().toString();

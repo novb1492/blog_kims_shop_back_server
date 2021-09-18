@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class reseponseSettleDto {
+    //insert시 사용되는것들
     private String mchtId;
     private String outStatCd;
     private String outRsltCd;
@@ -31,6 +32,7 @@ public class reseponseSettleDto {
     private String cphoneNo;
     private String billKey;
     private String trdDtm;
+    ///환불시 쓰는것들
     private int cnclOrd;
     private String vbankStatus;
     private String vbankFlag;
@@ -38,4 +40,5 @@ public class reseponseSettleDto {
     private String refundBankCd;
     private String refundAcntNo;
     private String userName;
+    private String itemName;
 }

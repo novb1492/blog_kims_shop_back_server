@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 public interface getClientInter {
     //reservation
-    int getId();
+    String getId();
     String getSeat();
     Timestamp getCreated();
     Timestamp getDate_and_time();
