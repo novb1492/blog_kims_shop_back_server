@@ -63,7 +63,7 @@ public class cardService {
        
         return body;
     }
-    public int updateCardPay(int newPrice,String cid) {
+    public void updateCardPay(int newPrice,String cid,reseponseSettleDto reseponseSettleDto) {
         System.out.println("updateCardPay");
         try {
             int id=Integer.parseInt(cid);
@@ -78,7 +78,8 @@ public class cardService {
                 System.out.println("환불 잔액 0"+newPrice);
                 cardDao.deleteById(id);
             }
-            return cnclOrd;
+            System.out.println(cnclOrd+" 취소회차");
+            reseponseSettleDto.setCnclOrd(cnclOrd);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             System.out.println("updateCardPay error"+e.getMessage());
@@ -90,13 +91,11 @@ public class cardService {
         }
         
     }
-    public reseponseSettleDto getClientInterToDto(getClientInter getClientInter) {
+    public void getClientInterToDto(getClientInter getClientInter,reseponseSettleDto reseponseSettleDto) {
         System.out.println("getClientInterToDto");
-        reseponseSettleDto dto=new reseponseSettleDto();
-        dto.setMchtTrdNo(getClientInter.getCmcht_trd_no());
-        dto.setTrdAmt(getClientInter.getPrice());
-        dto.setMchtId(getClientInter.getCmcht_id());
-        dto.setTrdNo(getClientInter.getCtrd_no());
-        return dto;
+        reseponseSettleDto.setMchtTrdNo(getClientInter.getCmcht_trd_no());
+        reseponseSettleDto.setTrdAmt(getClientInter.getPrice());
+        reseponseSettleDto.setMchtId(getClientInter.getCmcht_id());
+        reseponseSettleDto.setTrdNo(getClientInter.getCtrd_no());
     }
 }

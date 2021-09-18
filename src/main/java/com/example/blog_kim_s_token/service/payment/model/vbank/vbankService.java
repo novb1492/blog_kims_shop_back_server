@@ -196,13 +196,11 @@ public class vbankService {
             throw new RuntimeException("카드 내역 변경 실패");
         }
     }
-    public reseponseSettleDto getClientInterToDto(getClientInter getClientInter) {
+    public void getClientInterToDto(getClientInter getClientInter,reseponseSettleDto reseponseSettleDto) {
         System.out.println("getClientInterToDto");
-        reseponseSettleDto dto=new reseponseSettleDto();
-        dto.setMchtTrdNo(getClientInter.getVmcht_trd_no());
-        dto.setCnclAmt(getClientInter.getPrice());
-        dto.setMchtId(getClientInter.getVmcht_id());
-        dto.setTrdNo(getClientInter.getVtrd_no());
-        return dto;
+        reseponseSettleDto.setMchtTrdNo(getClientInter.getVmcht_trd_no());
+        reseponseSettleDto.setCnclAmt(getClientInter.getPrice());
+        reseponseSettleDto.setMchtId(getClientInter.getVmcht_id());
+        reseponseSettleDto.setTrdNo(getClientInter.getVtrd_no());
     }
 }
