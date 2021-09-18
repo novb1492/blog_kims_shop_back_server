@@ -16,6 +16,7 @@ import com.example.blog_kim_s_token.jwt.jwtService;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
+import com.example.blog_kim_s_token.service.ApiServies.kakao.model.kakaopayDao;
 import com.example.blog_kim_s_token.service.payment.paymentService;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
@@ -78,6 +79,7 @@ public class kakaoService {
     private reservationService resevationService;
     @Autowired
     private kakaopayService kakaopayService;
+
 
     
     public String kakaoGetLoginCode() {
@@ -251,12 +253,23 @@ public class kakaoService {
             throw new failKakaoPay(e.getMessage(),cid,tid,total_amount);
         }
     }  
+    public void requestCancleToKakaoPay(String tid,int price) {
+        System.out.println("requestCancleToKakaoPay");
+        MultiValueMap<String,Object> body=new LinkedMultiValueMap<>();
+        body.add("cid", cid);
+        body.add("tid", tid);
+        body.add("cancel_amount", price);
+        body.add("cancel_tax_free_amount",0);
+        
+        cancleKakaopay(body);
+    }
     public void  cancleKakaopay(MultiValueMap<String,Object> body2) {
         System.out.println("cancleKakaopay");
         body=body2;
         headers.add("Authorization","KakaoAK "+adminKey);
         requestToKakao(realCancleUrl);
     }
+    
   
     
 

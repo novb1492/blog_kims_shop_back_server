@@ -56,8 +56,6 @@ public class paymentService {
     private  int period;
     @Value("${payment.minusHour}")
     private  int minusHour;
-    @Value("${kakao.kakaoPay.cid}")
-    private String kakaoPayCid;
     @Autowired
     private kakaoService kakaoService;
     @Autowired
@@ -213,15 +211,6 @@ public class paymentService {
            }
         }
         throw new RuntimeException(messege);
-    }
-    public void requestCancleToKakaoPay(String tid,int price) {
-        System.out.println("requestCancleToKakaoPay");
-        MultiValueMap<String,Object> body=new LinkedMultiValueMap<>();
-        body.add("cid", kakaoPayCid);
-        body.add("tid", tid);
-        body.add("cancel_amount", price);
-        body.add("cancel_tax_free_amount",0);
-        kakaoService.cancleKakaopay(body);
     }
     @Transactional(rollbackFor = Exception.class)
     public JSONObject makeTohash(getHashInfor getHashInfor) {
@@ -431,6 +420,7 @@ public class paymentService {
                     requestCancle(reseponseSettleDto);
                 }else if(g.getKtid()!=null){
                     System.out.println("카카오페이로 결제한 상품 취소");
+                    kakaoService.requestCancleToKakaoPay(g.getKtid(), Integer.parseInt(g.getPrice()));
                 }
             }
             

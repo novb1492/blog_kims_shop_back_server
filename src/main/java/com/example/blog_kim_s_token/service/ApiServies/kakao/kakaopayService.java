@@ -37,5 +37,8 @@ public class kakaopayService {
             throw new RuntimeException("카카오페이 저장 실패");
         }
     }
+    public void deleteByKtid(String ktid) {
+        kakaopayDao.deleteByKtid(ktid);
+    }
 
 }
