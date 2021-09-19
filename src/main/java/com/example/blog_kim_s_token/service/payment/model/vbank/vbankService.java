@@ -10,7 +10,6 @@ import java.util.Map;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.reservation.getClientInter;
-import com.example.blog_kim_s_token.model.reservation.reservationDao;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
@@ -226,7 +225,6 @@ public class vbankService {
         int vbankReadysSize=vbankReadys.size();
         int minusPrice=0;
         int nextMinusPrice=0;
-        List<JSONObject>updateRequests=new ArrayList<>();
         List<JSONObject>deleteRequests=new ArrayList<>();
         for(int i=0;i<vbankReadysSize;i++){
             if(i==0){

@@ -425,7 +425,7 @@ public class paymentService {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("deleteDb error"+e.getMessage());
-            throw new RuntimeException("테이블 삭제 실패");
+            throw new RuntimeException("결제 테이블 삭제 실패");
         }
      
     }
