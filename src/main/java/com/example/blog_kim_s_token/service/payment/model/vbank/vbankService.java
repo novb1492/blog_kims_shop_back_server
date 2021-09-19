@@ -281,6 +281,8 @@ public class vbankService {
                 if(getClientInter.getSeat()!=null){
                     System.out.println("미입금 가상계좌 부분취소 예약테이블 반영");
                     reservationService.updatenewpayment_id((String)params.get("mchtTrdNo"),getClientInter.getVmcht_trd_no());
+                }else{
+                    System.out.println("미입금 가상계좌 부분취소 일반상품테이블 반영");
                 }
                
                 
