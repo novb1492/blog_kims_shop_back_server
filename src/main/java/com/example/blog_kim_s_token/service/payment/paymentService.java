@@ -397,54 +397,25 @@ public class paymentService {
     }
     private void deletePaymentDb(List<getClientInter>clientInters ) {
         System.out.println("deleteDb");
-        int newPrice=0;
         List<getClientInter>cards=new ArrayList<>();
+        List<getClientInter>vbankPaids=new ArrayList<>();
         try {
             for(getClientInter g:clientInters){
                 if(g.getCid()!=null){
                     System.out.println("카드 취소 요청 카드 취소 리스트에 저장시도");
                     cards.add(g);
+                }else if(g.getVid()!=null&&g.getVbankstatus().equals(aboutPayEnums.statusPaid.getString())){
+                    System.out.println("결제완료된 vbank 취소 리스트에 저장시도");
+                    vbankPaids.add(g);
                 }
             }
             if(!cards.isEmpty()){
                 System.out.println("카드 취소 요청 묶음 분류 시작");
                 cardService.requestCancleCard(cards);
-            
-               /* int cardsSize=cards.size();
-                int minusPrice=0;
-                int nextMinusPrice=0;
-                for(int i=0;i<cardsSize;i++){
-                    if(i==0){
-                        System.out.println("카드결제 제일 처음분류 ");
-                        minusPrice+=Integer.parseInt(cards.get(i).getPrice());
-                        if(i==cardsSize-1){
-                            cardService.updateCardPay(minusPrice, cards.get(i).getCid(),reseponseSettleDto);
-                            cardService.getClientInterToDto(cards.get(i),reseponseSettleDto,minusPrice);
-                            requestCancle(reseponseSettleDto);
-                        }
-                    }else if(cards.get(i).getCmcht_trd_no().equals(cards.get(i-1).getCmcht_trd_no())){
-                        System.out.println("이전번호와 일치함");
-                        minusPrice+=Integer.parseInt(cards.get(i).getPrice());
-                        if(i==cardsSize-1){
-                            cardService.updateCardPay(minusPrice, cards.get(i).getCid(),reseponseSettleDto);
-                            cardService.getClientInterToDto(cards.get(i),reseponseSettleDto,minusPrice);
-                            requestCancle(reseponseSettleDto);
-                        }
-                    }else if(!cards.get(i).getCmcht_trd_no().equals(cards.get(i-1).getCmcht_trd_no())){
-                        System.out.println("이전번호와 일치하지 않음");
-                        nextMinusPrice=Integer.parseInt(cards.get(i).getPrice());
-                        cardService.updateCardPay(minusPrice, cards.get(i-1).getCid(),reseponseSettleDto);
-                        cardService.getClientInterToDto(cards.get(i-1),reseponseSettleDto,minusPrice);
-                        requestCancle(reseponseSettleDto);
-                        if(i==cardsSize-1){
-                            minusPrice=nextMinusPrice;
-                            cardService.updateCardPay(minusPrice, cards.get(i).getCid(),reseponseSettleDto);
-                            cardService.getClientInterToDto(cards.get(i),reseponseSettleDto,minusPrice);
-                            requestCancle(reseponseSettleDto);
-                        }
-                        minusPrice=nextMinusPrice;
-                    }
-                }*/
+            }
+            if(!vbankPaids.isEmpty()){
+                System.out.println("결제완료된 vbank 취소 요청 묶음 분류 시작");
+                vbankService.requqestCanclePaidVbank(vbankPaids);
             }
             /*for(getClientInter g:clientInters){
                 if(g.getCid()!=null){
@@ -482,6 +453,12 @@ public class paymentService {
         String url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
         requestToSettle(url);
     }
+    public void requestCanclePaidVbank(reseponseSettleDto reseponseSettleDto) {
+        System.out.println("requestCanclePaidVbank");
+        this.body=vbankService.makeCancleBody(reseponseSettleDto);
+        String url="https://tbgw.settlebank.co.kr/spay/APIRefund.do";  
+        requestToSettle(url);
+    }
     public void requestCancle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("requestCancle");
         String url=null;
@@ -490,17 +467,9 @@ public class paymentService {
             this.body=cardService.makecancelBody(reseponseSettleDto);
             url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
         }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
-            if(reseponseSettleDto.getVbankStatus().equals(aboutPayEnums.statusReady.getString())){///채번취소는 미입금 변경시에도 일어나야함
                 System.out.println("가상계좌 채번취소");
                 this.body=vbankService.makeCancleAccountBody(reseponseSettleDto);
                 url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";
-                 
-            }else{
-                System.out.println("가상계좌 환불");
-                this.body=vbankService.makeCancleBody(reseponseSettleDto);
-                url="https://tbgw.settlebank.co.kr/spay/APIRefund.do";  
-            }
-     
         }
         requestToSettle(url);
     }

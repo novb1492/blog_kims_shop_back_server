@@ -2,6 +2,8 @@ package com.example.blog_kim_s_token.service.payment.model.vbank;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
@@ -163,7 +165,7 @@ public class vbankService {
             }
        
     }
-    public void updateVBankPay(int newPrice,String vid,reseponseSettleDto reseponseSettleDto) {
+    public void updateVBankPay(int minusPrice,String vid,reseponseSettleDto reseponseSettleDto) {
         System.out.println("updateVBankPay");
         try {
             int id=Integer.parseInt(vid);
@@ -171,19 +173,15 @@ public class vbankService {
             insertvbankDto insertvbankDto=vbankDao.findById(id).orElseThrow(()->new IllegalAccessException("vbank 내역이 존재 하지 않습니다"));
             int cnclOrd=insertvbankDto.getVcnclOrd();
             String vbankStatus=insertvbankDto.getVbankstatus();//입금여부
+            int originPrice=Integer.parseInt(insertvbankDto.getVtrdAmt());
             System.out.println(cnclOrd+"환불횟수"+insertvbankDto.toString());
             cnclOrd+=1;
-            if(newPrice>0){
-                System.out.println("환불 잔액"+newPrice);
+            if(minusPrice<originPrice){
+                System.out.println("환불 잔액"+minusPrice);
                 insertvbankDto.setVcnclOrd(cnclOrd);
-                insertvbankDto.setVtrdAmt(Integer.toString(newPrice));
-                if(vbankStatus.equals(aboutPayEnums.statusReady.getString())){
-                    System.out.println("가상계좌 미입금 환불요청 잔액남음");
-                    reseponseSettleDto.setVbankFlag("true");///금액이 남았다면 부분취소
-                }
+                insertvbankDto.setVtrdAmt(Integer.toString(originPrice-minusPrice));
             }else{
-                System.out.println("환불 잔액 0"+newPrice);
-                reseponseSettleDto.setVbankFlag("false");///금액이 없다면 채번취소
+                System.out.println("환불 잔액 0"+minusPrice);
                 vbankDao.deleteById(id);
             }
             System.out.println(cnclOrd);
@@ -198,16 +196,59 @@ public class vbankService {
         }catch(Exception e){
             e.printStackTrace();
             System.out.println("updateCardPay error"+e.getMessage());
-            throw new RuntimeException("카드 내역 변경 실패");
+            throw new RuntimeException("vbank 내역 변경 실패");
         }
     }
-    public void getClientInterToDto(getClientInter getClientInter,reseponseSettleDto reseponseSettleDto) {
+    public void requqestCanclePaidVbank(List<getClientInter>vbankPaids) {
+        System.out.println("requqestCanclePaidVbank");
+        int vbankPaidsSize=vbankPaids.size();
+        int minusPrice=0;
+        int nextMinusPrice=0;
+        List<reseponseSettleDto>requests=new ArrayList<>();
+        for(int i=0;i<vbankPaidsSize;i++){
+            if(i==0){
+                System.out.println("결제된 vbank 제일 처음분류 ");
+                minusPrice+=Integer.parseInt(vbankPaids.get(i).getPrice());
+                if(i==vbankPaidsSize-1){
+                   makeReseponseSettleDto( minusPrice, vbankPaids.get(i),requests);
+                }
+            }else if(vbankPaids.get(i).getCmcht_trd_no().equals(vbankPaids.get(i-1).getCmcht_trd_no())){
+                System.out.println("이전번호와 일치함");
+                minusPrice+=Integer.parseInt(vbankPaids.get(i).getPrice());
+                if(i==vbankPaidsSize-1){
+                    makeReseponseSettleDto( minusPrice, vbankPaids.get(i),requests);
+                }
+            }else if(!vbankPaids.get(i).getCmcht_trd_no().equals(vbankPaids.get(i-1).getCmcht_trd_no())){
+                System.out.println("이전번호와 일치하지 않음");
+                nextMinusPrice=Integer.parseInt(vbankPaids.get(i).getPrice());
+                makeReseponseSettleDto( minusPrice, vbankPaids.get(i-1),requests);
+                if(i==vbankPaidsSize-1){
+                    minusPrice=nextMinusPrice;
+                    makeReseponseSettleDto( minusPrice, vbankPaids.get(i),requests);
+                }
+                minusPrice=nextMinusPrice;
+            }
+        }
+        for(reseponseSettleDto r: requests){
+            System.out.println("vbank 취소요청");
+            paymentService.requestCanclePaidVbank(r);
+        }
+    }
+    private void makeReseponseSettleDto(int minusPrice,getClientInter vbanks,List<reseponseSettleDto>requests) {
+        System.out.println("makeReseponseSettleDto");
+        reseponseSettleDto reseponseSettleDto=new reseponseSettleDto();
+        updateVBankPay(minusPrice, vbanks.getVid(),reseponseSettleDto);
+        getClientInterToDto(vbanks,reseponseSettleDto,minusPrice);
+        requests.add(reseponseSettleDto);
+    }
+    public void getClientInterToDto(getClientInter getClientInter,reseponseSettleDto reseponseSettleDto,int minusPrice) {
         System.out.println("getClientInterToDto");
         userDto userDto=userService.sendUserDto();
         reseponseSettleDto.setUserName(userDto.getName());
         reseponseSettleDto.setMchtTrdNo(getClientInter.getVmcht_trd_no());
-        reseponseSettleDto.setCnclAmt(getClientInter.getPrice());
+        reseponseSettleDto.setCnclAmt(Integer.toString(minusPrice));
         reseponseSettleDto.setMchtId(getClientInter.getVmcht_id());
         reseponseSettleDto.setTrdNo(getClientInter.getVtrd_no());
     }
+
 }
