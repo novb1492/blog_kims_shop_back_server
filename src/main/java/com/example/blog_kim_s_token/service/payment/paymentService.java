@@ -387,8 +387,7 @@ public class paymentService {
             }else if(kind.equals(aboutPayEnums.product.getString())){
                 System.out.println("일반 상품 취소검증");
             }
-            reseponseSettleDto reseponseSettleDto=new reseponseSettleDto();
-            deletePaymentDb(clientInters,reseponseSettleDto);
+            deletePaymentDb(clientInters);
             return utillService.makeJson(true, "환불 되었습니다");
         } catch (Exception e) {
             e.printStackTrace();
@@ -396,7 +395,7 @@ public class paymentService {
             throw new failCancleException(e.getMessage());
         }
     }
-    private void deletePaymentDb(List<getClientInter>clientInters,reseponseSettleDto reseponseSettleDto) {
+    private void deletePaymentDb(List<getClientInter>clientInters ) {
         System.out.println("deleteDb");
         int newPrice=0;
         List<getClientInter>cards=new ArrayList<>();
@@ -409,7 +408,9 @@ public class paymentService {
             }
             if(!cards.isEmpty()){
                 System.out.println("카드 취소 요청 묶음 분류 시작");
-                int cardsSize=clientInters.size();
+                cardService.requestCancleCard(cards);
+            
+               /* int cardsSize=cards.size();
                 int minusPrice=0;
                 int nextMinusPrice=0;
                 for(int i=0;i<cardsSize;i++){
@@ -443,7 +444,7 @@ public class paymentService {
                         }
                         minusPrice=nextMinusPrice;
                     }
-                }
+                }*/
             }
             /*for(getClientInter g:clientInters){
                 if(g.getCid()!=null){
@@ -474,6 +475,12 @@ public class paymentService {
             throw new RuntimeException("테이블 삭제 실패");
         }
      
+    }
+    public void requestCancleCard(reseponseSettleDto reseponseSettleDto) {
+        System.out.println("requestCancleCard");
+        this.body=cardService.makecancelBody(reseponseSettleDto);
+        String url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
+        requestToSettle(url);
     }
     public void requestCancle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("requestCancle");

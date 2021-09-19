@@ -1,5 +1,7 @@
 package com.example.blog_kim_s_token.service.payment.model.card;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
@@ -98,5 +100,47 @@ public class cardService {
         reseponseSettleDto.setTrdAmt(Integer.toString(minusPrice));
         reseponseSettleDto.setMchtId(getClientInter.getCmcht_id());
         reseponseSettleDto.setTrdNo(getClientInter.getCtrd_no());
+    }
+    public void requestCancleCard(List<getClientInter>cards) {
+        System.out.println("requestCancleCard");
+        int cardsSize=cards.size();
+        int minusPrice=0;
+        int nextMinusPrice=0;
+        List<reseponseSettleDto>requests=new ArrayList<>();
+        for(int i=0;i<cardsSize;i++){
+            if(i==0){
+                System.out.println("카드 결제 제일 처음분류 ");
+                minusPrice+=Integer.parseInt(cards.get(i).getPrice());
+                if(i==cardsSize-1){
+                   makeReseponseSettleDto( minusPrice, cards.get(i),requests);
+                }
+            }else if(cards.get(i).getCmcht_trd_no().equals(cards.get(i-1).getCmcht_trd_no())){
+                System.out.println("이전번호와 일치함");
+                minusPrice+=Integer.parseInt(cards.get(i).getPrice());
+                if(i==cardsSize-1){
+                    makeReseponseSettleDto( minusPrice, cards.get(i),requests);
+                }
+            }else if(!cards.get(i).getCmcht_trd_no().equals(cards.get(i-1).getCmcht_trd_no())){
+                System.out.println("이전번호와 일치하지 않음");
+                nextMinusPrice=Integer.parseInt(cards.get(i).getPrice());
+                makeReseponseSettleDto( minusPrice, cards.get(i-1),requests);
+                if(i==cardsSize-1){
+                    minusPrice=nextMinusPrice;
+                    makeReseponseSettleDto( minusPrice, cards.get(i),requests);
+                }
+                minusPrice=nextMinusPrice;
+            }
+        }
+        for(reseponseSettleDto r: requests){
+            System.out.println("카드 결제 취소요청");
+            paymentService.requestCancleCard(r);
+        }
+    }
+    private void makeReseponseSettleDto(int minusPrice,getClientInter cards,List<reseponseSettleDto>requests) {
+        System.out.println("makeReseponseSettleDto");
+        reseponseSettleDto reseponseSettleDto=new reseponseSettleDto();
+        updateCardPay(minusPrice, cards.getCid(),reseponseSettleDto);
+        getClientInterToDto(cards,reseponseSettleDto,minusPrice);
+        requests.add(reseponseSettleDto);
     }
 }
