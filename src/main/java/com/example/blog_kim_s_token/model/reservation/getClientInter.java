@@ -23,6 +23,7 @@ public interface getClientInter {
     String getVtrd_no();
     String getVfn_cd();
     Timestamp getVtrd_dtm();
+    int getVcncl_ord();
     //CARD
     String getCid();
     String getCfn_nm();

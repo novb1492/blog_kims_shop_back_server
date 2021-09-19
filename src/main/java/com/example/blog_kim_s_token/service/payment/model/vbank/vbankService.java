@@ -3,19 +3,21 @@ package com.example.blog_kim_s_token.service.payment.model.vbank;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
-import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.reservation.getClientInter;
+import com.example.blog_kim_s_token.model.reservation.reservationDao;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.paymentService;
+import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,8 @@ public class vbankService {
     private vbankDao vbankDao;
     @Autowired
     private userService userService;
+    @Autowired
+    private reservationService reservationService;
 
     public void insertVbank(reseponseSettleDto reseponseSettleDto) {
         System.out.println("insertVbank");
@@ -140,34 +144,26 @@ public class vbankService {
             }
        
     }
-    public void updateVBankPay(int minusPrice,String vid,reseponseSettleDto reseponseSettleDto) {
+    public void updateVBankPay(int minusPrice,reseponseSettleDto reseponseSettleDto,getClientInter vbanks) {
         System.out.println("updateVBankPay");
         try {
-            int id=Integer.parseInt(vid);
+            int id=Integer.parseInt(vbanks.getVid());
             System.out.println(id+" 아이디");
-            insertvbankDto insertvbankDto=vbankDao.findById(id).orElseThrow(()->new IllegalAccessException("vbank 내역이 존재 하지 않습니다"));
-            int cnclOrd=insertvbankDto.getVcnclOrd();
-            String vbankStatus=insertvbankDto.getVbankstatus();//입금여부
-            int originPrice=Integer.parseInt(insertvbankDto.getVtrdAmt());
-            System.out.println(cnclOrd+"환불횟수"+insertvbankDto.toString());
+            int cnclOrd=vbanks.getVcncl_ord();
+            int originPrice=Integer.parseInt(vbanks.getVtrd_amt());
+            System.out.println(cnclOrd+"환불횟수");
             cnclOrd+=1;
             if(minusPrice<originPrice){
                 System.out.println("환불 잔액"+minusPrice);
-                insertvbankDto.setVcnclOrd(cnclOrd);
-                insertvbankDto.setVtrdAmt(Integer.toString(originPrice-minusPrice));
+                vbankDao.updateVbankcnclOrdAndPriceNative(cnclOrd, originPrice-minusPrice, id);
             }else{
                 System.out.println("환불 잔액 0"+minusPrice);
                 vbankDao.deleteById(id);
             }
             System.out.println(cnclOrd);
             reseponseSettleDto.setCnclOrd(cnclOrd);
-            reseponseSettleDto.setRefundBankCd(insertvbankDto.getVfnCd());
-            reseponseSettleDto.setRefundAcntNo(insertvbankDto.getVtlAcntNo());
-            reseponseSettleDto.setVbankStatus(vbankStatus);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            System.out.println("updateCardPay error"+e.getMessage());
-            throw new RuntimeException(e.getMessage());
+            reseponseSettleDto.setRefundBankCd(vbanks.getVfn_cd());
+            reseponseSettleDto.setRefundAcntNo(vbanks.getVtl_acnt_no());
         }catch(Exception e){
             e.printStackTrace();
             System.out.println("updateCardPay error"+e.getMessage());
@@ -212,7 +208,7 @@ public class vbankService {
     private void makeReseponseSettleDto(int minusPrice,getClientInter vbanks,List<reseponseSettleDto>requests) {
         System.out.println("makeReseponseSettleDto");
         reseponseSettleDto reseponseSettleDto=new reseponseSettleDto();
-        updateVBankPay(minusPrice, vbanks.getVid(),reseponseSettleDto);
+        updateVBankPay(minusPrice,reseponseSettleDto,vbanks);
         getClientInterToDto(vbanks,reseponseSettleDto,minusPrice);
         requests.add(reseponseSettleDto);
     }
@@ -238,34 +234,24 @@ public class vbankService {
                 minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
                 if(i==vbankReadysSize-1){
                     System.out.println("미입금 부분/전체인지 판별시도");
-                    deleteOrUpdate(vbankReadys.get(i), minusPrice,updateRequests,deleteRequests);
+                    deleteOrUpdate(vbankReadys.get(i), minusPrice,deleteRequests);
                 }
             }else if(vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
                 System.out.println("이전번호와 일치함");
                 minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
                 if(i==vbankReadysSize-1){
-                    deleteOrUpdate(vbankReadys.get(i),minusPrice,updateRequests,deleteRequests);
+                    deleteOrUpdate(vbankReadys.get(i),minusPrice,deleteRequests);
                 }
             }else if(!vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
                 System.out.println("이전번호와 일치하지 않음");
                 nextMinusPrice=Integer.parseInt(vbankReadys.get(i).getPrice());
-                deleteOrUpdate(vbankReadys.get(i-1),minusPrice,updateRequests,deleteRequests);
+                deleteOrUpdate(vbankReadys.get(i-1),minusPrice,deleteRequests);
                 if(i==vbankReadysSize-1){
                     minusPrice=nextMinusPrice;
-                    deleteOrUpdate(vbankReadys.get(i),minusPrice,updateRequests,deleteRequests);
+                    deleteOrUpdate(vbankReadys.get(i),minusPrice,deleteRequests);
                 }
                 minusPrice=nextMinusPrice;
             }
-        }
-        List<JSONObject>responses=new ArrayList<>();
-        if(!updateRequests.isEmpty()){
-            System.out.println("가상계좌 새로 채번 시도");
-            for(JSONObject j:updateRequests){
-                JSONObject response=paymentService.requestGetNewAccount(j);
-                responses.add(response);
-            }
-            System.out.println("새 가상계좌 채번환료");
-            changeVbank(vbankReadys, responses,updateRequests);
         }
         if(!deleteRequests.isEmpty()){
             System.out.println("가상계좌 채번 취소 시도");
@@ -275,25 +261,25 @@ public class vbankService {
             System.out.println("가상계좌 채번 취소 완료");
         }
     }
-    private void changeVbank(List<getClientInter>vbankReadys,List<JSONObject>responses,List<JSONObject>updateRequests) {
-        System.out.println("changeVbank");
-        for(JSONObject j:updateRequests){
-            for(getClientInter g:vbankReadys){
-                if(j.get(g.getVid())!=null){
-                    
-                }
-            }
-        }
-    }
-    private void deleteOrUpdate(getClientInter getClientInter,int minusPrice,List<JSONObject>updateRequests,List<JSONObject>deleteRequests) {
+    private void deleteOrUpdate(getClientInter getClientInter,int minusPrice,List<JSONObject>deleteRequests) {
         System.out.println("deleteOrUpdate");
-        int  newPrice=minusPrice(Integer.parseInt(getClientInter.getVtrd_amt()),minusPrice);
+        int newPrice=minusPrice(Integer.parseInt(getClientInter.getVtrd_amt()),minusPrice);
+        System.out.println(newPrice+" 새 채번 요청 가격");
             if(newPrice>0){
-                System.out.println("미입금전 부분취소 배열담기");
-                JSONObject vids=new JSONObject();
-                vids.put(getClientInter.getVid(), getClientInter.getVid());
-                updateRequests.add(vids);
-                makeGetReAccountBody(getClientInter,minusPrice,updateRequests); 
+                System.out.println("미입금전 부분취소 배열담기"+getClientInter.getVid());
+                JSONObject body=makeGetReAccountBody(getClientInter,newPrice); 
+                JSONObject response =paymentService.requestGetNewAccount(body);
+                LinkedHashMap<String,Object>data=(LinkedHashMap<String, Object>)response.get("data");
+                LinkedHashMap<String,Object>params=(LinkedHashMap<String, Object>)response.get("params");
+                String vAcntNo=paymentService.aesToNomal((String)data.get("vAcntNo"));
+                int trdAmt=Integer.parseInt(paymentService.aesToNomal((String)data.get("trdAmt")));
+                String trdNo=(String)params.get("trdNo");
+                String mchtTrdNo=(String)params.get("mchtTrdNo");
+                int vid=Integer.parseInt(getClientInter.getVid());
+                System.out.println(vAcntNo+" "+trdAmt+" "+trdNo+" "+vid+" 정보");
+                vbankDao.updateVbankvtl_acnt_noAndvmcht_trd_noAndPriceNative(vAcntNo,trdAmt,mchtTrdNo,trdNo,vid);
+                reservationService.updatenewpayment_id((String)params.get("mchtTrdNo"),getClientInter.getVmcht_trd_no());
+                
             }else if(newPrice==0){
                 System.out.println("미입금전 전부 취소 배열담기");
                 vbankDao.deleteById(Integer.parseInt(getClientInter.getVid()));
@@ -329,7 +315,7 @@ public class vbankService {
             throw new RuntimeException();
         }
     }
-    private void makeGetReAccountBody(getClientInter getClientInter,int newPrice,List<JSONObject>requests) {
+    private JSONObject makeGetReAccountBody(getClientInter getClientInter,int newPrice) {
         System.out.println("makeGetReAccountBody");
         JSONObject body=new JSONObject();
         JSONObject params=new JSONObject();
@@ -381,14 +367,14 @@ public class vbankService {
            data.put("expireDate", expireDate.replaceAll("[:,-,' ']",""));
            body.put("params", params);
            body.put("data", data);
-           requests.add(body);
+           return body;
             
 
 
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("makeGetReAccountBody error"+e.getMessage());
-           
+           throw new RuntimeException("가상계좌  body 만들기 실패");
         }
 
     }

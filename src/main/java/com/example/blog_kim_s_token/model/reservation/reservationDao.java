@@ -6,8 +6,9 @@ import java.util.Optional;
 
 import com.example.blog_kim_s_token.model.payment.tryDeleteInter;
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 
 
@@ -43,6 +44,12 @@ public interface reservationDao extends JpaRepository<mainReservationDto,Integer
  
     @Query(value = "select a.*,b.price  from reservation  a inner join product  b  on a.seat=b.product_name where a.id=? ",nativeQuery = true)
     Optional<tryDeleteInter> findBySeatJoin(int id);
+
+    
+    @Modifying
+    @Transactional
+    @Query(value = "update reservation r set r.payment_id=? where r.payment_id=?",nativeQuery = true)
+    void updatepayment_idNative(String newpayment_id,String originpayment_id);
 
 
 

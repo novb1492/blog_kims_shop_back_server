@@ -291,7 +291,7 @@ public class paymentService {
             throw new failBuyException(e.getMessage(),reseponseSettleDto);
         }
     }
-    private String aesToNomal(String hash) {
+    public String aesToNomal(String hash) {
         try {
             byte[] aesCipherRaw2=aes256.decodeBase64(hash);
             return new String(aes256.aes256DecryptEcb(aesCipherRaw2),"UTF-8");

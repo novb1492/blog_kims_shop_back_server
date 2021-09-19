@@ -434,6 +434,10 @@ public class reservationService {
         }
        throw new RuntimeException(messege);
     }
+    public void updatenewpayment_id(String newpayment_id,String originpayment_id) {
+        System.out.println("updatenewpayment_id"+newpayment_id+" "+originpayment_id);
+        reservationDao.updatepayment_idNative(newpayment_id, originpayment_id);
+    }
     
 
 }
