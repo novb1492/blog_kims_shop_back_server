@@ -38,6 +38,7 @@ public interface getClientInter {
     String getKtid();
     Timestamp getK_created(); 
     int getKtotal_amount();
+    ///일반상품 (아직 없음)
 
 
 
