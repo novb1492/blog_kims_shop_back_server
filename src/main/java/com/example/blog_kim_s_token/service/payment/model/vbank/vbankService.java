@@ -278,7 +278,11 @@ public class vbankService {
                 int vid=Integer.parseInt(getClientInter.getVid());
                 System.out.println(vAcntNo+" "+trdAmt+" "+trdNo+" "+vid+" 정보");
                 vbankDao.updateVbankvtl_acnt_noAndvmcht_trd_noAndPriceNative(vAcntNo,trdAmt,mchtTrdNo,trdNo,vid);
-                reservationService.updatenewpayment_id((String)params.get("mchtTrdNo"),getClientInter.getVmcht_trd_no());
+                if(getClientInter.getSeat()!=null){
+                    System.out.println("미입금 가상계좌 부분취소 예약테이블 반영");
+                    reservationService.updatenewpayment_id((String)params.get("mchtTrdNo"),getClientInter.getVmcht_trd_no());
+                }
+               
                 
             }else if(newPrice==0){
                 System.out.println("미입금전 전부 취소 배열담기");
