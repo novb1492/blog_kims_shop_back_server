@@ -22,6 +22,7 @@ import com.example.blog_kim_s_token.service.priceService;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
+import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaopayService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.model.cancle.tryCancleDto;
@@ -54,6 +55,8 @@ public class paymentService {
     private  int minusHour;
     @Autowired
     private kakaoService kakaoService;
+    @Autowired
+    private kakaopayService kakaopayService;
     @Autowired
     private userService userService;
     @Autowired
@@ -431,32 +434,8 @@ public class paymentService {
             }
             if(!kakaopays.isEmpty()){
                 System.out.println("카카오페이 취소 요청 묶음 분류 시작");
-                kakaoService.requestCancleToKakaoPay(kakaopays);
-            }
-            
-            /*for(getClientInter g:clientInters){
-                if(g.getCid()!=null){
-                    System.out.println("카드로 결제된 상품 취소");
-                    newPrice=minusPrice(g.getCtrd_amt(), Integer.parseInt(g.getPrice()));
-                    cardService.getClientInterToDto(g,reseponseSettleDto);
-                    cardService.updateCardPay(newPrice, g.getCid(),reseponseSettleDto);
-                    requestCancle(reseponseSettleDto);
-                }else if(g.getVid()!=null){
-                    System.out.println("가상계좌로 결제된 상품 취소");
-                    newPrice=minusPrice(Integer.parseInt(g.getVtrd_amt()), Integer.parseInt(g.getPrice()));
-                    vbankService.getClientInterToDto(g,reseponseSettleDto);
-                    vbankService.updateVBankPay(newPrice, g.getVid(),reseponseSettleDto);
-                    if(reseponseSettleDto.getVbankStatus().equals(aboutPayEnums.statusReady.getString())&&reseponseSettleDto.getVbankFlag().equals("true")){
-                        System.out.println("가상계좌 입금전 부분취소 요청");
-                        vbankService.getReAccount(reseponseSettleDto);
-                    }
-                    requestCancle(reseponseSettleDto);
-                }else if(g.getKtid()!=null){
-                    System.out.println("카카오페이로 결제한 상품 취소");
-                    kakaoService.requestCancleToKakaoPay(g.getKtid(), Integer.parseInt(g.getPrice()));
-                }
-            }*/
-            
+                kakaopayService.requestCancleToKakaoPay(kakaopays);
+            }      
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("deleteDb error"+e.getMessage());
