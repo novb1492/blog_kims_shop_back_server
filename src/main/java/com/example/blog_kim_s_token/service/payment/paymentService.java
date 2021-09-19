@@ -447,6 +447,12 @@ public class paymentService {
         String url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";  
         return requestToSettle(url);
     }
+    public JSONObject requestCancleAccount(JSONObject body) {
+        System.out.println("requestCancleAccount");
+        this.body=body;
+        String url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";  
+        return requestToSettle(url);
+    }
     public void requestCancle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("requestCancle");
         String url=null;

@@ -231,7 +231,7 @@ public class vbankService {
         int minusPrice=0;
         int nextMinusPrice=0;
         List<JSONObject>updaterRequests=new ArrayList<>();
-        List<reseponseSettleDto>deleteRequests=new ArrayList<>();
+        List<JSONObject>deleteRequests=new ArrayList<>();
         for(int i=0;i<vbankReadysSize;i++){
             if(i==0){
                 System.out.println("미입금 vbank 제일 처음분류 ");
@@ -265,6 +265,13 @@ public class vbankService {
                 responses.add(response);
             }
             System.out.println("새 가상계좌 채번환료");
+        }
+        if(!deleteRequests.isEmpty()){
+            System.out.println("가상계좌 채번 취소 시도");
+            for(JSONObject j:deleteRequests){
+               paymentService.requestCancleAccount(j);
+            }
+            System.out.println("가상계좌 채번 취소 완료");
         }
       
        
@@ -301,15 +308,46 @@ public class vbankService {
         System.out.println("새 가상계좌 채번환료");*/
 
     }
-    private void deleteOrUpdate(getClientInter getClientInter,int minusPrice,List<JSONObject>updaterRequests,List<reseponseSettleDto>deleteRequests) {
+    private void deleteOrUpdate(getClientInter getClientInter,int minusPrice,List<JSONObject>updaterRequests,List<JSONObject>deleteRequests) {
         System.out.println("deleteOrUpdate");
         int  newPrice=minusPrice(Integer.parseInt(getClientInter.getVtrd_amt()),minusPrice);
             if(newPrice>0){
-                System.out.println("미입금전 부분취소 시도");
+                System.out.println("미입금전 부분취소 배열담기");
                 makeGetReAccountBody(getClientInter,minusPrice,updaterRequests); 
             }else if(newPrice==0){
-                System.out.println("미입금전 전부 취소");
+                System.out.println("미입금전 전부 취소 배열담기");
+               
+                makeCancleAccountBody(getClientInter,deleteRequests);
             }
+    }
+    private void makeCancleAccountBody(getClientInter getClientInter,List<JSONObject>deleteRequests) {
+        System.out.println("makeCancleAccountBody");
+        try {
+            Map<String,String>map=utillService.getTrdDtTrdTm();
+            String mchtId=getClientInter.getVmcht_id();
+            String mchtTrdNo=getClientInter.getVmcht_trd_no();
+            String pktHash=requestcancleString(mchtTrdNo,getClientInter.getVtrd_amt(), mchtId,map.get("trdDt"),map.get("trdTm"),"0");
+            JSONObject body=new JSONObject();
+            JSONObject params=new JSONObject();
+            JSONObject data=new JSONObject();
+            params.put("mchtId", mchtId);
+            params.put("ver", "0A17");
+            params.put("method", "VA");
+            params.put("bizType", "A2");
+            params.put("encCd", "23");
+            params.put("mchtTrdNo", mchtTrdNo);
+            params.put("trdDt", map.get("trdDt"));
+            params.put("trdTm", map.get("trdTm"));
+            data.put("pktHash", sha256.encrypt(pktHash));
+            data.put("orgTrdNo", getClientInter.getVtrd_no());
+            data.put("vAcntNo", aes256.encrypt(getClientInter.getVtl_acnt_no()));
+            body.put("params", params);
+            body.put("data", data);
+            deleteRequests.add(body);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
     }
     private void makeGetReAccountBody(getClientInter getClientInter,int newPrice,List<JSONObject>requests) {
         System.out.println("makeGetReAccountBody");
