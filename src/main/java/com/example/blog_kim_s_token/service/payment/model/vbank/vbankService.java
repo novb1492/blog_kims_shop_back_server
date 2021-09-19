@@ -212,13 +212,13 @@ public class vbankService {
                 if(i==vbankPaidsSize-1){
                    makeReseponseSettleDto( minusPrice, vbankPaids.get(i),requests);
                 }
-            }else if(vbankPaids.get(i).getCmcht_trd_no().equals(vbankPaids.get(i-1).getCmcht_trd_no())){
+            }else if(vbankPaids.get(i).getVmcht_trd_no().equals(vbankPaids.get(i-1).getVmcht_trd_no())){
                 System.out.println("이전번호와 일치함");
                 minusPrice+=Integer.parseInt(vbankPaids.get(i).getPrice());
                 if(i==vbankPaidsSize-1){
                     makeReseponseSettleDto( minusPrice, vbankPaids.get(i),requests);
                 }
-            }else if(!vbankPaids.get(i).getCmcht_trd_no().equals(vbankPaids.get(i-1).getCmcht_trd_no())){
+            }else if(!vbankPaids.get(i).getVmcht_trd_no().equals(vbankPaids.get(i-1).getVmcht_trd_no())){
                 System.out.println("이전번호와 일치하지 않음");
                 nextMinusPrice=Integer.parseInt(vbankPaids.get(i).getPrice());
                 makeReseponseSettleDto( minusPrice, vbankPaids.get(i-1),requests);
