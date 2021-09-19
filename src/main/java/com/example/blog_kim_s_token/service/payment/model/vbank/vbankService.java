@@ -230,8 +230,45 @@ public class vbankService {
         int vbankReadysSize=vbankReadys.size();
         int minusPrice=0;
         int nextMinusPrice=0;
-        List<JSONObject>requests=new ArrayList<>();
+        List<JSONObject>updaterRequests=new ArrayList<>();
+        List<reseponseSettleDto>deleteRequests=new ArrayList<>();
         for(int i=0;i<vbankReadysSize;i++){
+            if(i==0){
+                System.out.println("미입금 vbank 제일 처음분류 ");
+                minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
+                if(i==vbankReadysSize-1){
+                    System.out.println("미입금 부분/전체인지 판별시도");
+                    deleteOrUpdate(vbankReadys.get(i), minusPrice,updaterRequests,deleteRequests);
+                }
+            }else if(vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
+                System.out.println("이전번호와 일치함");
+                minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
+                if(i==vbankReadysSize-1){
+                    deleteOrUpdate(vbankReadys.get(i),minusPrice,updaterRequests,deleteRequests);
+                }
+            }else if(!vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
+                System.out.println("이전번호와 일치하지 않음");
+                nextMinusPrice=Integer.parseInt(vbankReadys.get(i).getPrice());
+                deleteOrUpdate(vbankReadys.get(i-1),minusPrice,updaterRequests,deleteRequests);
+                if(i==vbankReadysSize-1){
+                    minusPrice=nextMinusPrice;
+                    deleteOrUpdate(vbankReadys.get(i),minusPrice,updaterRequests,deleteRequests);
+                }
+                minusPrice=nextMinusPrice;
+            }
+        }
+        List<JSONObject>responses=new ArrayList<>();
+        if(!updaterRequests.isEmpty()){
+            System.out.println("가상계좌 새로 채번 시도");
+            for(JSONObject j:updaterRequests){
+                JSONObject response=paymentService.requestGetNewAccount(j);
+                responses.add(response);
+            }
+            System.out.println("새 가상계좌 채번환료");
+        }
+      
+       
+        /*for(int i=0;i<vbankReadysSize;i++){
             if(i==0){
                 System.out.println("미입금 vbank 제일 처음분류 ");
                 minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
@@ -261,15 +298,20 @@ public class vbankService {
             JSONObject response=paymentService.requestGetNewAccount(j);
             responses.add(response);
         }
-        System.out.println("새 가상계좌 채번환료");
+        System.out.println("새 가상계좌 채번환료");*/
 
     }
-    private void updateDb(List<getClientInter>vbankReadys,List<JSONObject>responses) {
-        list
-        if()
-        
+    private void deleteOrUpdate(getClientInter getClientInter,int minusPrice,List<JSONObject>updaterRequests,List<reseponseSettleDto>deleteRequests) {
+        System.out.println("deleteOrUpdate");
+        int  newPrice=minusPrice(Integer.parseInt(getClientInter.getVtrd_amt()),minusPrice);
+            if(newPrice>0){
+                System.out.println("미입금전 부분취소 시도");
+                makeGetReAccountBody(getClientInter,minusPrice,updaterRequests); 
+            }else if(newPrice==0){
+                System.out.println("미입금전 전부 취소");
+            }
     }
-    private void makeGetReAccountBody(getClientInter getClientInter,int minusPrice,List<JSONObject>requests) {
+    private void makeGetReAccountBody(getClientInter getClientInter,int newPrice,List<JSONObject>requests) {
         System.out.println("makeGetReAccountBody");
         JSONObject body=new JSONObject();
         JSONObject params=new JSONObject();
@@ -286,8 +328,7 @@ public class vbankService {
         }
         System.out.println(itmeName); 
         userDto userDto=userService.sendUserDto();
-        int originPrice=Integer.parseInt(getClientInter.getVtrd_amt());
-        String price=Integer.toString(originPrice-minusPrice);
+        String price=Integer.toString(newPrice);
         String mchtId=getClientInter.getVmcht_id();
         String trdDt=map.get("trdDt");
         String trdTm=map.get("trdTm");
@@ -332,6 +373,10 @@ public class vbankService {
            
         }
 
+    }
+    private int minusPrice(int originPrice,int minusPrice) {
+        System.out.println("minusPrice");
+        return originPrice-minusPrice;
     }
     private String requestPayString(String trdDt,String trdTm,String mchtId,String mchtTrdNo,String newPrice) {
         return  String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,newPrice,"ST1009281328226982205");
