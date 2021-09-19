@@ -31,6 +31,7 @@ public interface getClientInter {
     int getCtrd_amt();
     String getCmcht_id();
     String getCtrd_no();
+    int getCcncl_ord();
     //kakaopay
     int getKid();
     String getKtid();

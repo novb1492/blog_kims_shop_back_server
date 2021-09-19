@@ -230,7 +230,7 @@ public class vbankService {
         int vbankReadysSize=vbankReadys.size();
         int minusPrice=0;
         int nextMinusPrice=0;
-        List<JSONObject>updaterRequests=new ArrayList<>();
+        List<JSONObject>updateRequests=new ArrayList<>();
         List<JSONObject>deleteRequests=new ArrayList<>();
         for(int i=0;i<vbankReadysSize;i++){
             if(i==0){
@@ -238,33 +238,34 @@ public class vbankService {
                 minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
                 if(i==vbankReadysSize-1){
                     System.out.println("미입금 부분/전체인지 판별시도");
-                    deleteOrUpdate(vbankReadys.get(i), minusPrice,updaterRequests,deleteRequests);
+                    deleteOrUpdate(vbankReadys.get(i), minusPrice,updateRequests,deleteRequests);
                 }
             }else if(vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
                 System.out.println("이전번호와 일치함");
                 minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
                 if(i==vbankReadysSize-1){
-                    deleteOrUpdate(vbankReadys.get(i),minusPrice,updaterRequests,deleteRequests);
+                    deleteOrUpdate(vbankReadys.get(i),minusPrice,updateRequests,deleteRequests);
                 }
             }else if(!vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
                 System.out.println("이전번호와 일치하지 않음");
                 nextMinusPrice=Integer.parseInt(vbankReadys.get(i).getPrice());
-                deleteOrUpdate(vbankReadys.get(i-1),minusPrice,updaterRequests,deleteRequests);
+                deleteOrUpdate(vbankReadys.get(i-1),minusPrice,updateRequests,deleteRequests);
                 if(i==vbankReadysSize-1){
                     minusPrice=nextMinusPrice;
-                    deleteOrUpdate(vbankReadys.get(i),minusPrice,updaterRequests,deleteRequests);
+                    deleteOrUpdate(vbankReadys.get(i),minusPrice,updateRequests,deleteRequests);
                 }
                 minusPrice=nextMinusPrice;
             }
         }
         List<JSONObject>responses=new ArrayList<>();
-        if(!updaterRequests.isEmpty()){
+        if(!updateRequests.isEmpty()){
             System.out.println("가상계좌 새로 채번 시도");
-            for(JSONObject j:updaterRequests){
+            for(JSONObject j:updateRequests){
                 JSONObject response=paymentService.requestGetNewAccount(j);
                 responses.add(response);
             }
             System.out.println("새 가상계좌 채번환료");
+            changeVbank(vbankReadys, responses,updateRequests);
         }
         if(!deleteRequests.isEmpty()){
             System.out.println("가상계좌 채번 취소 시도");
@@ -273,50 +274,29 @@ public class vbankService {
             }
             System.out.println("가상계좌 채번 취소 완료");
         }
-      
-       
-        /*for(int i=0;i<vbankReadysSize;i++){
-            if(i==0){
-                System.out.println("미입금 vbank 제일 처음분류 ");
-                minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
-                if(i==vbankReadysSize-1){
-                   makeGetReAccountBody(vbankReadys.get(i),minusPrice,requests);
+    }
+    private void changeVbank(List<getClientInter>vbankReadys,List<JSONObject>responses,List<JSONObject>updateRequests) {
+        System.out.println("changeVbank");
+        for(JSONObject j:updateRequests){
+            for(getClientInter g:vbankReadys){
+                if(j.get(g.getVid())!=null){
+                    
                 }
-            }else if(vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
-                System.out.println("이전번호와 일치함");
-                minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
-                if(i==vbankReadysSize-1){
-                    makeGetReAccountBody(vbankReadys.get(i),minusPrice,requests);
-                }
-            }else if(!vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
-                System.out.println("이전번호와 일치하지 않음");
-                nextMinusPrice=Integer.parseInt(vbankReadys.get(i).getPrice());
-                makeGetReAccountBody(vbankReadys.get(i-1),minusPrice,requests);
-                if(i==vbankReadysSize-1){
-                    minusPrice=nextMinusPrice;
-                    makeGetReAccountBody(vbankReadys.get(i),minusPrice,requests);
-                }
-                minusPrice=nextMinusPrice;
             }
         }
-        List<JSONObject>responses=new ArrayList<>();
-        for(JSONObject j:requests){
-            System.out.println("가상계좌 새로 채번 시도");
-            JSONObject response=paymentService.requestGetNewAccount(j);
-            responses.add(response);
-        }
-        System.out.println("새 가상계좌 채번환료");*/
-
     }
-    private void deleteOrUpdate(getClientInter getClientInter,int minusPrice,List<JSONObject>updaterRequests,List<JSONObject>deleteRequests) {
+    private void deleteOrUpdate(getClientInter getClientInter,int minusPrice,List<JSONObject>updateRequests,List<JSONObject>deleteRequests) {
         System.out.println("deleteOrUpdate");
         int  newPrice=minusPrice(Integer.parseInt(getClientInter.getVtrd_amt()),minusPrice);
             if(newPrice>0){
                 System.out.println("미입금전 부분취소 배열담기");
-                makeGetReAccountBody(getClientInter,minusPrice,updaterRequests); 
+                JSONObject vids=new JSONObject();
+                vids.put(getClientInter.getVid(), getClientInter.getVid());
+                updateRequests.add(vids);
+                makeGetReAccountBody(getClientInter,minusPrice,updateRequests); 
             }else if(newPrice==0){
                 System.out.println("미입금전 전부 취소 배열담기");
-               
+                vbankDao.deleteById(Integer.parseInt(getClientInter.getVid()));
                 makeCancleAccountBody(getClientInter,deleteRequests);
             }
     }

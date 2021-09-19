@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.RuntimeErrorException;
+
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.reservation.getClientInter;
 import com.example.blog_kim_s_token.service.utillService;
@@ -65,28 +67,22 @@ public class cardService {
        
         return body;
     }
-    public void updateCardPay(int newPrice,String cid,reseponseSettleDto reseponseSettleDto) {
+    public void  updateCardPay(int newPrice,String cid,getClientInter cards,reseponseSettleDto reseponseSettleDto) {
         System.out.println("updateCardPay");
         try {
-            int id=Integer.parseInt(cid);
-            cardDto cardDto=cardDao.findById(id).orElseThrow(()->new IllegalAccessException("카드 내역이 존재 하지 않습니다"));
-            int cnclOrd=cardDto.getCcnclOrd();
-            int originPrice=Integer.parseInt(cardDto.getCtrdAmt());
+            int id=Integer.parseInt(cards.getCid());
+            int cnclOrd=cards.getCcncl_ord();
+            int originPrice=cards.getCtrd_amt();
             cnclOrd+=1;
             if(newPrice<originPrice){
                 System.out.println("환불 잔액"+newPrice);
-                cardDto.setCcnclOrd(cnclOrd);
-                cardDto.setCtrdAmt(Integer.toString(originPrice-newPrice));
+                cardDao.updateCardPriceAndCountNative(Integer.toString(originPrice-newPrice), cnclOrd, id);
             }else{
                 System.out.println("환불 잔액 0");
                 cardDao.deleteById(id);
             }
             System.out.println(cnclOrd+" 취소회차");
-            reseponseSettleDto.setCnclOrd(cnclOrd);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            System.out.println("updateCardPay error"+e.getMessage());
-            throw new RuntimeException(e.getMessage());
+            reseponseSettleDto.setCnclOrd(cnclOrd); 
         }catch(Exception e){
             e.printStackTrace();
             System.out.println("updateCardPay error"+e.getMessage());
@@ -131,7 +127,7 @@ public class cardService {
                 minusPrice=nextMinusPrice;
             }
         }
-        for(reseponseSettleDto r: requests){
+       for(reseponseSettleDto r: requests){
             System.out.println("카드 결제 취소요청");
             paymentService.requestCancleCard(r);
         }
@@ -139,7 +135,7 @@ public class cardService {
     private void makeReseponseSettleDto(int minusPrice,getClientInter cards,List<reseponseSettleDto>requests) {
         System.out.println("makeReseponseSettleDto");
         reseponseSettleDto reseponseSettleDto=new reseponseSettleDto();
-        updateCardPay(minusPrice, cards.getCid(),reseponseSettleDto);
+        updateCardPay(minusPrice, cards.getCid(),cards,reseponseSettleDto);
         getClientInterToDto(cards,reseponseSettleDto,minusPrice);
         requests.add(reseponseSettleDto);
     }
