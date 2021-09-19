@@ -62,7 +62,7 @@ public class vbankService {
     public JSONObject makeCancleAccountBody(reseponseSettleDto reseponseSettleDto) {
         try {
             Map<String,String>map=utillService.getTrdDtTrdTm();
-            String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
+            String pktHash=requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"),"0");
             JSONObject body=new JSONObject();
             JSONObject params=new JSONObject();
             JSONObject data=new JSONObject();
@@ -77,35 +77,6 @@ public class vbankService {
             data.put("pktHash", sha256.encrypt(pktHash));
             data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
             data.put("vAcntNo", aes256.encrypt(reseponseSettleDto.getVtlAcntNo()));
-            body.put("params", params);
-            body.put("data", data);
-        return body;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException();
-        }
-    }
-    public JSONObject getReAccount(reseponseSettleDto reseponseSettleDto) {
-        System.out.println("getReAccount");
-        try {
-            Map<String,String>map=utillService.getTrdDtTrdTm();
-            String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
-            JSONObject body=new JSONObject();
-            JSONObject params=new JSONObject();
-            JSONObject data=new JSONObject();
-            params.put("mchtId", reseponseSettleDto.getMchtId());
-            params.put("ver", "0A17");
-            params.put("method", "VA");
-            params.put("bizType", "A0");
-            params.put("encCd", "23");
-            params.put("mchtTrdNo", reseponseSettleDto.getMchtTrdNo());
-            params.put("trdDt", map.get("trdDt"));
-            params.put("trdTm", map.get("trdTm"));
-            data.put("pktHash", sha256.encrypt(pktHash));
-            data.put("bankCd", reseponseSettleDto.getFnCd());
-            data.put("orgTrdNo", reseponseSettleDto.getTrdNo());
-            data.put("vAcntNo", aes256.encrypt(reseponseSettleDto.getVtlAcntNo()));
-            data.put("acntType", "1");
             body.put("params", params);
             body.put("data", data);
         return body;
@@ -146,10 +117,13 @@ public class vbankService {
             throw new RuntimeException();
         }
     }
-    public String requestcancleString(String mchtTrdNo,String price,String mchtId,String trdDt,String trdTm) {
+    private String requestcancleString(String mchtTrdNo,String price,String mchtId,String trdDt,String trdTm) {
         System.out.println("requestcancleString");
-        String pain=String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,price,"ST1009281328226982205"); 
-        return  pain;
+        return  String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,price,"ST1009281328226982205"); 
+    }
+    private String requestcancleString(String mchtTrdNo,String price,String mchtId,String trdDt,String trdTm,String zero) {
+        System.out.println("requestcancleString zero");
+        return String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,zero,"ST1009281328226982205"); 
     }
     @Transactional
     public void okVank(reseponseSettleDto reseponseSettleDto) {
@@ -249,6 +223,41 @@ public class vbankService {
         reseponseSettleDto.setCnclAmt(Integer.toString(minusPrice));
         reseponseSettleDto.setMchtId(getClientInter.getVmcht_id());
         reseponseSettleDto.setTrdNo(getClientInter.getVtrd_no());
+    }
+    public void reGetAccount(List<getClientInter>vbankReadys) {
+        System.out.println("reGetAccount");
+        int vbankReadysSize=vbankReadys.size();
+        int minusPrice=0;
+        int nextMinusPrice=0;
+        List<reseponseSettleDto>requests=new ArrayList<>();
+        for(int i=0;i<vbankReadysSize;i++){
+            if(i==0){
+                System.out.println("결제된 vbank 제일 처음분류 ");
+                minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
+                if(i==vbankReadysSize-1){
+                   makeReseponseSettleDto( minusPrice, vbankReadys.get(i),requests);
+                }
+            }else if(vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
+                System.out.println("이전번호와 일치함");
+                minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
+                if(i==vbankReadysSize-1){
+                    makeReseponseSettleDto( minusPrice, vbankReadys.get(i),requests);
+                }
+            }else if(!vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
+                System.out.println("이전번호와 일치하지 않음");
+                nextMinusPrice=Integer.parseInt(vbankReadys.get(i).getPrice());
+                makeReseponseSettleDto( minusPrice, vbankReadys.get(i-1),requests);
+                if(i==vbankReadysSize-1){
+                    minusPrice=nextMinusPrice;
+                    makeReseponseSettleDto( minusPrice, vbankReadys.get(i),requests);
+                }
+                minusPrice=nextMinusPrice;
+            }
+        }
+        for(reseponseSettleDto r: requests){
+            System.out.println("vbank 취소요청");
+            paymentService.requestCanclePaidVbank(r);
+        }
     }
 
 }

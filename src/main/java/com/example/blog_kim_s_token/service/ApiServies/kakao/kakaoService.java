@@ -2,7 +2,6 @@ package com.example.blog_kim_s_token.service.ApiServies.kakao;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,16 +10,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.amazonaws.services.managedblockchain.model.IllegalActionException;
 import com.example.blog_kim_s_token.customException.failKakaoPay;
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
 import com.example.blog_kim_s_token.jwt.jwtService;
-import com.example.blog_kim_s_token.model.reservation.getClientInter;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
-import com.example.blog_kim_s_token.service.ApiServies.kakao.model.kakaopayDao;
-import com.example.blog_kim_s_token.service.ApiServies.kakao.model.kakaopayDto;
 import com.example.blog_kim_s_token.service.payment.paymentService;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;

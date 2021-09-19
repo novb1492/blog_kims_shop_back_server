@@ -21,14 +21,12 @@ import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.priceService;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
-import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaopayService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.model.cancle.tryCancleDto;
 import com.example.blog_kim_s_token.service.payment.model.card.cardService;
 import com.example.blog_kim_s_token.service.payment.model.tempPaid.tempPaidDto;
-import com.example.blog_kim_s_token.service.payment.model.vbank.insertvbankDto;
 import com.example.blog_kim_s_token.service.payment.model.vbank.vbankService;
 import com.example.blog_kim_s_token.service.reservation.reservationService;
 import com.nimbusds.jose.shaded.json.JSONObject;
@@ -53,8 +51,6 @@ public class paymentService {
     private  int period;
     @Value("${payment.minusHour}")
     private  int minusHour;
-    @Autowired
-    private kakaoService kakaoService;
     @Autowired
     private kakaopayService kakaopayService;
     @Autowired
@@ -281,6 +277,7 @@ public class paymentService {
             if(reseponseSettleDto.getMchtTrdNo().startsWith(aboutPayEnums.reservation.getString())){
                 System.out.println("예약 상품 검증완료");
                 reservationService.tempToMain(reseponseSettleDto);
+                //throw new Exception("test");
             }else {
                 System.out.println("일반 상품 검증완료");
             }
@@ -321,17 +318,6 @@ public class paymentService {
         }
         throw new RuntimeException(message);
     
-    }
-    public String requestcancleString(String mchtTrdNo,String price,String mchtId,String trdDt,String trdTm) {
-        String pain=null;
-        if(mchtId.equals(aboutPayEnums.vbankmehthod.getString())){
-            System.out.println("가상계좌  plain생성");
-            pain=String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,"0","ST1009281328226982205"); 
-        }else{
-            System.out.println("일반 plain생성");
-            pain=String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,price,"ST1009281328226982205"); 
-        }
-        return  pain;
     }
     private void requestToSettle(String url) {
         System.out.println("reuqestToSettle");
@@ -430,7 +416,7 @@ public class paymentService {
             }
             if(!vbankReadys.isEmpty()){
                 System.out.println("미입금 vbank 취소 요청 묶음 분류 시작");
-                
+                vbankService.reGetAccount(vbankReadys);
             }
             if(!kakaopays.isEmpty()){
                 System.out.println("카카오페이 취소 요청 묶음 분류 시작");

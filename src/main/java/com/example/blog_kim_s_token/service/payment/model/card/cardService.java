@@ -42,7 +42,7 @@ public class cardService {
     }
     public JSONObject makecancelBody(reseponseSettleDto reseponseSettleDto) {
         Map<String,String>map=utillService.getTrdDtTrdTm();
-        String pktHash=paymentService.requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
+        String pktHash=requestcancleString(reseponseSettleDto.getMchtTrdNo(),reseponseSettleDto.getTrdAmt(), reseponseSettleDto.getMchtId(),map.get("trdDt"),map.get("trdTm"));
         System.out.println(reseponseSettleDto.getTrdAmt());
         JSONObject body=new JSONObject();
         JSONObject params=new JSONObject();
@@ -142,5 +142,9 @@ public class cardService {
         updateCardPay(minusPrice, cards.getCid(),reseponseSettleDto);
         getClientInterToDto(cards,reseponseSettleDto,minusPrice);
         requests.add(reseponseSettleDto);
+    }
+    private String requestcancleString(String mchtTrdNo,String price,String mchtId,String trdDt,String trdTm) {
+        System.out.println("requestcancleString");
+        return  String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,price,"ST1009281328226982205"); 
     }
 }
