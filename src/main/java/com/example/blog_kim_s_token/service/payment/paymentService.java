@@ -319,7 +319,7 @@ public class paymentService {
         throw new RuntimeException(message);
     
     }
-    private void requestToSettle(String url) {
+    private JSONObject requestToSettle(String url) {
         System.out.println("reuqestToSettle");
         try {
             headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
@@ -330,7 +330,7 @@ public class paymentService {
             JSONObject response= restTemplate.postForObject(url,entity,JSONObject.class);
             System.out.println(response+" 세틀뱅크 통신결과");
             showResponse(response);
-           
+            return response;
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("requestToSettle error "+ e.getMessage());
@@ -440,6 +440,12 @@ public class paymentService {
         this.body=vbankService.makeCancleBody(reseponseSettleDto);
         String url="https://tbgw.settlebank.co.kr/spay/APIRefund.do";  
         requestToSettle(url);
+    }
+    public JSONObject requestGetNewAccount(JSONObject body) {
+        System.out.println("requestGetNewAccount");
+        this.body=body;
+        String url="https://tbgw.settlebank.co.kr/spay/APIVBank.do";  
+        return requestToSettle(url);
     }
     public void requestCancle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("requestCancle");

@@ -411,7 +411,7 @@ public class reservationService {
                 getClientInter clientInter=reservationDao.findByIdJoinNative(id).orElseThrow(()->new IllegalAccessException("존재하지 않는 예약내역입니다"));
                 confrimCancle(clientInter.getDate_and_time(), email);
                 clientInters.add(clientInter);
-                reservationDao.deleteById(id);
+                //reservationDao.deleteById(id);
             }
            return clientInters;
         } catch (Exception e) {

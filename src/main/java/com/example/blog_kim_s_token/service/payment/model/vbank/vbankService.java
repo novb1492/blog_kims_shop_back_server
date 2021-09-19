@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.example.blog_kim_s_token.enums.aboutPayEnums;
+import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.reservation.getClientInter;
 import com.example.blog_kim_s_token.model.user.userDto;
@@ -229,35 +230,111 @@ public class vbankService {
         int vbankReadysSize=vbankReadys.size();
         int minusPrice=0;
         int nextMinusPrice=0;
-        List<reseponseSettleDto>requests=new ArrayList<>();
+        List<JSONObject>requests=new ArrayList<>();
         for(int i=0;i<vbankReadysSize;i++){
             if(i==0){
-                System.out.println("결제된 vbank 제일 처음분류 ");
+                System.out.println("미입금 vbank 제일 처음분류 ");
                 minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
                 if(i==vbankReadysSize-1){
-                   makeReseponseSettleDto( minusPrice, vbankReadys.get(i),requests);
+                   makeGetReAccountBody(vbankReadys.get(i),minusPrice,requests);
                 }
             }else if(vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
                 System.out.println("이전번호와 일치함");
                 minusPrice+=Integer.parseInt(vbankReadys.get(i).getPrice());
                 if(i==vbankReadysSize-1){
-                    makeReseponseSettleDto( minusPrice, vbankReadys.get(i),requests);
+                    makeGetReAccountBody(vbankReadys.get(i),minusPrice,requests);
                 }
             }else if(!vbankReadys.get(i).getVmcht_trd_no().equals(vbankReadys.get(i-1).getVmcht_trd_no())){
                 System.out.println("이전번호와 일치하지 않음");
                 nextMinusPrice=Integer.parseInt(vbankReadys.get(i).getPrice());
-                makeReseponseSettleDto( minusPrice, vbankReadys.get(i-1),requests);
+                makeGetReAccountBody(vbankReadys.get(i-1),minusPrice,requests);
                 if(i==vbankReadysSize-1){
                     minusPrice=nextMinusPrice;
-                    makeReseponseSettleDto( minusPrice, vbankReadys.get(i),requests);
+                    makeGetReAccountBody(vbankReadys.get(i),minusPrice,requests);
                 }
                 minusPrice=nextMinusPrice;
             }
         }
-        for(reseponseSettleDto r: requests){
-            System.out.println("vbank 취소요청");
-            paymentService.requestCanclePaidVbank(r);
+        List<JSONObject>responses=new ArrayList<>();
+        for(JSONObject j:requests){
+            System.out.println("가상계좌 새로 채번 시도");
+            JSONObject response=paymentService.requestGetNewAccount(j);
+            responses.add(response);
         }
+        System.out.println("새 가상계좌 채번환료");
+
+    }
+    private void updateDb(List<getClientInter>vbankReadys,List<JSONObject>responses) {
+        list
+        if()
+        
+    }
+    private void makeGetReAccountBody(getClientInter getClientInter,int minusPrice,List<JSONObject>requests) {
+        System.out.println("makeGetReAccountBody");
+        JSONObject body=new JSONObject();
+        JSONObject params=new JSONObject();
+        JSONObject data=new JSONObject();
+        Map<String,String>map=utillService.getTrdDtTrdTm();
+        String mchtTrdNo=null;
+        String itmeName=null;
+        if(getClientInter.getSeat()!=null){
+            System.out.println("다시 채번 시킬 상품종류는 예약상품입니다");
+            itmeName=getClientInter.getSeat();
+            mchtTrdNo=aboutPayEnums.reservation.getString()+utillService.GetRandomNum(10);
+        }else{
+            System.out.println("다시 채번 시킬 상품종류는 일반상품입니다");
+        }
+        System.out.println(itmeName); 
+        userDto userDto=userService.sendUserDto();
+        int originPrice=Integer.parseInt(getClientInter.getVtrd_amt());
+        String price=Integer.toString(originPrice-minusPrice);
+        String mchtId=getClientInter.getVmcht_id();
+        String trdDt=map.get("trdDt");
+        String trdTm=map.get("trdTm");
+        String username=userDto.getName();
+        String expireDate=utillService.replaceDate(getClientInter.getVexpire_dt());
+        System.out.println(expireDate+" 입금만료일");
+        System.out.println(price+" 새거래금액");
+        try {
+        String pktHash=sha256.encrypt(requestPayString(trdDt, trdTm,mchtId,mchtTrdNo,price));
+           params.put("mchtId", mchtId);
+           params.put("ver", "0A17");
+           params.put("method", "VA");
+           params.put("bizType", "A0");
+           params.put("encCd", "23");
+           params.put("mchtTrdNo", mchtTrdNo);
+           params.put("trdDt", trdDt);
+           params.put("trdTm", trdTm);
+           data.put("pktHash", pktHash);
+           data.put("bankCd", getClientInter.getVfn_cd());
+           data.put("acntType", "1");//기본 휘발성 계좌
+           data.put("prdtNm", itmeName);
+           data.put("sellerNm", "kimsshop");
+           data.put("ordNm", username);
+           data.put("trdAmt", aes256.encrypt(price));
+           data.put("dpstrNm", username);
+           data.put("taxTypeCd", "N");
+           data.put("escrAgrYn", "N");
+           data.put("csrcIssReqYn", "Y");
+           data.put("cashRcptPrposDivCd", "0");
+           data.put("csrcRegNoDivCd", "4");
+           data.put("csrcRegNo", userDto.getPhoneNum());
+           data.put("expireDate", expireDate.replaceAll("[:,-,' ']",""));
+           body.put("params", params);
+           body.put("data", data);
+           requests.add(body);
+            
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("makeGetReAccountBody error"+e.getMessage());
+           
+        }
+
+    }
+    private String requestPayString(String trdDt,String trdTm,String mchtId,String mchtTrdNo,String newPrice) {
+        return  String.format("%s%s%s%s%s%s",trdDt,trdTm,mchtId,mchtTrdNo,newPrice,"ST1009281328226982205");
     }
 
 }

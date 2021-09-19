@@ -21,6 +21,7 @@ public interface getClientInter {
     String getVmcht_trd_no();
     String getVmcht_id();
     String getVtrd_no();
+    String getVfn_cd();
     Timestamp getVtrd_dtm();
     //CARD
     String getCid();

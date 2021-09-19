@@ -32,6 +32,17 @@ public class utillService {
         }
         return false;
     }
+    public static String replaceDate(Timestamp date) {
+        System.out.println("replaceDate");
+        String stDate=date.toString();
+        String[] splite=stDate.split(" ");
+        String dates=splite[0].replace("-", "");
+        String times=splite[1].replace(":", "");
+        times=times.substring(0,6);
+        System.out.println(dates+times+" 날짜 변환완료");
+        return dates+times;
+        
+    }
     public static Map<String,String> getTrdDtTrdTm() {
         System.out.println("getTrdDtTrdTm");
         Timestamp timestamp=Timestamp.valueOf(LocalDateTime.now());
