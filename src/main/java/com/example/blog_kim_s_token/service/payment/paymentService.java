@@ -399,6 +399,8 @@ public class paymentService {
         System.out.println("deleteDb");
         List<getClientInter>cards=new ArrayList<>();
         List<getClientInter>vbankPaids=new ArrayList<>();
+        List<getClientInter>vbankReadys=new ArrayList<>();
+        List<getClientInter>kakaopays=new ArrayList<>();
         try {
             for(getClientInter g:clientInters){
                 if(g.getCid()!=null){
@@ -407,6 +409,12 @@ public class paymentService {
                 }else if(g.getVid()!=null&&g.getVbankstatus().equals(aboutPayEnums.statusPaid.getString())){
                     System.out.println("결제완료된 vbank 취소 리스트에 저장시도");
                     vbankPaids.add(g);
+                }else if(g.getVid()!=null&&g.getVbankstatus().equals(aboutPayEnums.statusReady.getString())){
+                    System.out.println("미입금된 vbank 취소 리스트에 저장시도");
+                    vbankReadys.add(g);
+                }else if(g.getKtid()!=null){
+                    System.out.println("카카오페이 취소 리스트에 저장시도");
+                    kakaopays.add(g);
                 }
             }
             if(!cards.isEmpty()){
@@ -417,6 +425,15 @@ public class paymentService {
                 System.out.println("결제완료된 vbank 취소 요청 묶음 분류 시작");
                 vbankService.requqestCanclePaidVbank(vbankPaids);
             }
+            if(!vbankReadys.isEmpty()){
+                System.out.println("미입금 vbank 취소 요청 묶음 분류 시작");
+                
+            }
+            if(!kakaopays.isEmpty()){
+                System.out.println("카카오페이 취소 요청 묶음 분류 시작");
+                kakaoService.requestCancleToKakaoPay(kakaopays);
+            }
+            
             /*for(getClientInter g:clientInters){
                 if(g.getCid()!=null){
                     System.out.println("카드로 결제된 상품 취소");
