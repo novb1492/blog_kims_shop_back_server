@@ -429,9 +429,9 @@ public class paymentService {
         }
      
     }
-    public void requestCancleCard(reseponseSettleDto reseponseSettleDto) {
+    public void requestCancleCard(JSONObject body) {
         System.out.println("requestCancleCard");
-        this.body=cardService.makecancelBody(reseponseSettleDto);
+        this.body=body;
         String url="https://tbgw.settlebank.co.kr/spay/APICancel.do";
         requestToSettle(url);
     }

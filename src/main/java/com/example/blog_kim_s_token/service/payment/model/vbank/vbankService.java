@@ -369,8 +369,10 @@ public class vbankService {
            data.put("csrcRegNoDivCd", "4");
            data.put("csrcRegNo", userDto.getPhoneNum());
            data.put("expireDate", expireDate.replaceAll("[:,-,' ']",""));
+           data.put("notiUrl", "http://kim80800.iptime.org:8080/auth/settlebank");
            body.put("params", params);
            body.put("data", data);
+           
            return body;
             
 

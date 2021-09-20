@@ -128,7 +128,8 @@ public class cardService {
         }
        for(reseponseSettleDto r: requests){
             System.out.println("카드 결제 취소요청");
-            paymentService.requestCancleCard(r);
+            JSONObject body=makecancelBody(r);
+            paymentService.requestCancleCard(body);
         }
     }
     private void makeReseponseSettleDto(int minusPrice,getClientInter cards,List<reseponseSettleDto>requests) {
