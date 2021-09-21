@@ -331,12 +331,13 @@ public class reservationService {
         int fisrt=0;
             if(startDate.isEmpty()&&endDate.isEmpty()){
                 System.out.println("날짜 미지정 검색");
-                fisrt=utillService.getFirst(nowPage, pagingNum);
-                dtoArray=reservationDao.findByEmailJoinOrderByIdDescNative(email, fisrt-1,utillService.getEnd(fisrt, pagingNum)-fisrt+1).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
+                fisrt=utillService.getFirst(nowPage, pagingNum);///어디서부터 가져올지
+                //utillService.getEnd(fisrt, pagingNum)-fisrt+1=결국 몇개씩가져올지 였다면 그냥 pagingNum으로대체가능한거아닌가?
+                dtoArray=reservationDao.findByEmailJoinOrderByIdDescNative(email, fisrt-1,pagingNum).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
             }else{
                 System.out.println("날짜 지정 검색");
                 fisrt=utillService.getFirst(nowPage, pagingNum);
-                dtoArray=reservationDao.findByEmailJoinOrderByIdBetweenDescNative(email,Timestamp.valueOf(startDate+" "+"00:00:00"),Timestamp.valueOf(endDate+" 00:00:00"),fisrt-1,utillService.getEnd(fisrt, pagingNum)-fisrt+1).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
+                dtoArray=reservationDao.findByEmailJoinOrderByIdBetweenDescNative(email,Timestamp.valueOf(startDate+" "+"00:00:00"),Timestamp.valueOf(endDate+" 00:00:00"),fisrt-1,pagingNum).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
             }
         respone.put("totalPage", totalPage);
         return dtoArray;
