@@ -22,8 +22,8 @@ public interface vbankDao extends JpaRepository<insertvbankDto,Integer> {
     @Query(value = "update vbank v set v.vtl_acnt_no=?,v.vtrd_amt=?,v.vmcht_trd_no=?,v.vtrd_no =? where v.vid=?",nativeQuery = true)
     void updateVbankvtl_acnt_noAndvmcht_trd_noAndPriceNative(String vtl_acnt_no,int vtrd_amt,String vmcht_trd_no,String vtrd_no  ,int vid);
 
-   @Modifying
+    @Modifying
     @Transactional
-    @Query(value = "delete r,v from reservation r inner join vbank v on r.payment_id=v.vmcht_trd_no where v.vbankstatus='ready' and r.date_and_time<?",nativeQuery = true)
+    @Query(value = "delete r,v from reservation r inner join vbank v on r.payment_id=v.vmcht_trd_no where v.vbankstatus='ready' and v.vexpire_dt<?",nativeQuery = true)
     void deleteJoinReservationReady(Timestamp today);
 }
