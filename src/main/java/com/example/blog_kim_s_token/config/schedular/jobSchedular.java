@@ -24,8 +24,8 @@ public class jobSchedular {
     public void deletevbank() {
         System.out.println("deletevbank");
         try {
-            //JobParameters JobParameters=new JobParametersBuilder().addString("key","vbank"+LocalDateTime.now().toString()).toJobParameters();
-            //jobLauncher.run(vbankConfig.job(),JobParameters);
+            JobParameters JobParameters=new JobParametersBuilder().addString("key","vbank"+LocalDateTime.now().toString()).toJobParameters();
+            jobLauncher.run(vbankConfig.job(),JobParameters);
 
         } catch (Exception e) {
 

@@ -4,7 +4,7 @@ package com.example.blog_kim_s_token.config.batch.tasks;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
-
+import com.example.blog_kim_s_token.service.payment.model.vbank.vbankDao;
 
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -17,17 +17,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class scanVbank implements Tasklet  {
    
-    /*private vbankDao vbankDao;
+    private vbankDao vbankDao;
     
 
     public scanVbank(vbankDao vbankDao){
         this.vbankDao=vbankDao;
-    }*/
+    }
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
        System.out.println("scanVbank execute");
-
+        vbankDao.deleteJoinReservationReady(Timestamp.valueOf(LocalDateTime.now()));
         return RepeatStatus.FINISHED;
     }
     

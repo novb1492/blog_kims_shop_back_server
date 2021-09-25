@@ -1,5 +1,6 @@
 package com.example.blog_kim_s_token.service.payment.model.vbank;
 
+import java.sql.Timestamp;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,9 @@ public interface vbankDao extends JpaRepository<insertvbankDto,Integer> {
     @Transactional
     @Query(value = "update vbank v set v.vtl_acnt_no=?,v.vtrd_amt=?,v.vmcht_trd_no=?,v.vtrd_no =? where v.vid=?",nativeQuery = true)
     void updateVbankvtl_acnt_noAndvmcht_trd_noAndPriceNative(String vtl_acnt_no,int vtrd_amt,String vmcht_trd_no,String vtrd_no  ,int vid);
+
+   @Modifying
+    @Transactional
+    @Query(value = "delete r,v from reservation r inner join vbank v on r.payment_id=v.vmcht_trd_no where v.vbankstatus='ready' and r.date_and_time<?",nativeQuery = true)
+    void deleteJoinReservationReady(Timestamp today);
 }

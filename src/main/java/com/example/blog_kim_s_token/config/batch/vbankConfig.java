@@ -2,7 +2,7 @@ package com.example.blog_kim_s_token.config.batch;
 
 
 import com.example.blog_kim_s_token.config.batch.tasks.scanVbank;
-
+import com.example.blog_kim_s_token.service.payment.model.vbank.vbankDao;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -23,21 +23,21 @@ public class vbankConfig {
     private final StepBuilderFactory stepBuilderFactory;
     private final String batchName="checkNonePaidVbank2";
 
- 
-    
-    
-   /* @Bean 
+    @Autowired
+    private vbankDao vbankDao;
+
+    @Bean 
     public Job job(){ 
         System.out.println("job");
         return jobBuilderFactory.get(batchName).start(doClearNonePaidReservation()).build();
     } 
-    /*@Bean
+    @Bean
     protected Step doClearNonePaidReservation() {
         return stepBuilderFactory
             .get("doClearNonePaidReservation2")
-          .tasklet(new scanVbank(null))
+          .tasklet(new scanVbank(vbankDao))
           .build();
-    }*/
+    }
 
 
 }
