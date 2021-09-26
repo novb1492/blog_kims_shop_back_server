@@ -3,7 +3,6 @@ package com.example.blog_kim_s_token.service;
 
 import java.util.Optional;
 
-import com.amazonaws.services.managedblockchain.model.IllegalActionException;
 import com.example.blog_kim_s_token.enums.priceEnums;
 import com.example.blog_kim_s_token.model.product.productDao;
 import com.example.blog_kim_s_token.model.product.productDto;
@@ -78,15 +77,15 @@ public class productService {
         try {
             productDto productDto=productDao.findByProductName(productName).orElseThrow(()->new IllegalAccessException("존재하지 않는 제품입니다"));
             int originCount=productDto.getCount();
+            int newCount=originCount-count;
+            if(newCount<=0){
+                throw new RuntimeException("재고가 없습니다");
+            }
             productDto.setCount(originCount-count);
-        }catch(IllegalAccessException e){
-            e.printStackTrace();
-            System.out.println("minusProductCount error"+ e.getMessage());
-            throw new RuntimeException(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("minusProductCount error"+ e.getMessage());
-            throw new RuntimeException("재고가 부족합니다");
+            throw new RuntimeException(e.getMessage());
         }
     }
 

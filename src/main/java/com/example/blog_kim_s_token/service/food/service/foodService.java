@@ -57,7 +57,11 @@ public class foodService {
                                     .build();
                                     foodDao.save(dto);
             }
-        } catch (Exception e) {
+        }catch (RuntimeException e) {
+            e.printStackTrace();
+            System.out.println("insertMain error "+e.getMessage());
+            throw new RuntimeException(e.getMessage());
+         }catch (Exception e) {
            e.printStackTrace();
            System.out.println("insertMain error "+e.getMessage());
            throw new RuntimeException("음식테이블 저장 실패");
