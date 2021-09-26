@@ -18,7 +18,7 @@ import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
 import com.example.blog_kim_s_token.model.product.productDto;
 import com.example.blog_kim_s_token.model.reservation.getClientInter;
 import com.example.blog_kim_s_token.model.user.userDto;
-import com.example.blog_kim_s_token.service.priceService;
+import com.example.blog_kim_s_token.service.productService;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaopayService;
@@ -47,7 +47,7 @@ public class paymentService {
     private JSONObject body=new JSONObject();
 
     @Autowired
-    private priceService priceService;
+    private productService priceService;
     @Value("${payment.period}")
     private  int period;
     @Value("${payment.minusHour}")
@@ -465,6 +465,7 @@ public class paymentService {
     public void requestCancle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("requestCancle");
         String url=null;
+        reseponseSettleDto.setCnclOrd(1);
         if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.cardmehtod.getString())){
             System.out.println("카드결제 환불");
             this.body=cardService.makecancelBody(reseponseSettleDto);

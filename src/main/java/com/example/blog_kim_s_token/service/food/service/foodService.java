@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.blog_kim_s_token.model.payment.getHashInfor;
 import com.example.blog_kim_s_token.model.payment.reseponseSettleDto;
+import com.example.blog_kim_s_token.service.productService;
 import com.example.blog_kim_s_token.service.food.model.foodDao;
 import com.example.blog_kim_s_token.service.food.model.foodDto;
 import com.example.blog_kim_s_token.service.food.model.tempFoodDao;
@@ -18,6 +19,8 @@ public class foodService {
     private foodDao foodDao;
     @Autowired
     private tempFoodDao tempFoodDao;
+    @Autowired
+    private productService productService;
     
     public void insertTemp(getHashInfor getHashInfor,String email,String name,String mchtTrdNo) {
         System.out.println("insertTemp");
@@ -44,6 +47,7 @@ public class foodService {
         try {
             List<tempFoodDto> tempFoodDtos=tempFoodDao.findByTfpaymentid(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalAccessException("임시 음식테이블에서 찾을 수없습니다"));
             for(tempFoodDto f:tempFoodDtos){
+                productService.minusProductCount(f.getTfood_name(), f.getTf_count());
                 foodDto dto=foodDto.builder()
                                     .f_count(f.getTf_count())
                                     .femail(f.getTfemail())
