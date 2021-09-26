@@ -22,6 +22,7 @@ import com.example.blog_kim_s_token.service.priceService;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaopayService;
+import com.example.blog_kim_s_token.service.food.service.foodService;
 import com.example.blog_kim_s_token.service.hash.aes256;
 import com.example.blog_kim_s_token.service.hash.sha256;
 import com.example.blog_kim_s_token.service.payment.model.cancle.tryCancleDto;
@@ -63,6 +64,8 @@ public class paymentService {
     private reservationService reservationService;
     @Autowired
     private tempService tempService;
+    @Autowired
+    private foodService foodService;
 
 
 
@@ -232,12 +235,7 @@ public class paymentService {
                 System.out.println("가상계좌 입금기한 생성시도");
                 response.put("expiredate",  getVbankDate(kind, getHashInfor.getYear(), getHashInfor.getMonth() , getHashInfor.getDate(), getHashInfor.getTimes()));
             }
-            if(kind.equals(aboutPayEnums.reservation.getString())){
-                System.out.println("예약 임시 테이블 저장");
-                reservationService.insertTemp(getHashInfor,email,mchtTrdNo,userDto.getName(),mchtCustId);
-            }else {
-                System.out.println("일반상품");
-            }
+            inertTemp(getHashInfor, email, mchtTrdNo, userDto.getName(), mchtCustId, kind);
             response.put("mchtCustId", mchtCustId);
             response.put("mchtTrdNo", mchtTrdNo);
             response.put("trdAmt", hashPrice);
@@ -255,6 +253,16 @@ public class paymentService {
     private String requestPayString(getHashInfor getHashInfor) {
         return  String.format("%s%s%s%s%s%s%s",getHashInfor.getMchtId(),getHashInfor.getMethod(),getHashInfor.getMchtTrdNo(),getHashInfor.getRequestDate(),getHashInfor.getRequestTime(),getHashInfor.getTotalPrice(),"ST1009281328226982205");
     }
+    private void inertTemp(getHashInfor getHashInfor,String email,String mchtTrdNo,String name,String mchtCustId,String kind) {
+        System.out.println("inertTemp");
+        if(kind.equals(aboutPayEnums.reservation.getString())){
+            System.out.println("예약 임시 테이블 저장");
+            reservationService.insertTemp(getHashInfor,email,mchtTrdNo,name,mchtCustId);
+        }else if(kind.equals(aboutPayEnums.food.getString())) {
+            System.out.println("음식 상품");
+            foodService.insertTemp(getHashInfor, email, name, mchtTrdNo);
+        }
+    }
     @Transactional(rollbackFor = Exception.class)
     public JSONObject confrimSettle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("confrimSettle");
@@ -263,6 +271,7 @@ public class paymentService {
             reseponseSettleDto.setTrdAmt(trdAmt);
             userDto userDto=userService.sendUserDto();
             checkDetails(reseponseSettleDto,userDto.getEmail());
+            String mchtTrdNo=reseponseSettleDto.getMchtTrdNo();
             if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.cardmehtod.getString())){
                 System.out.println("카드 결제 상품입니다");
                 cardService.insertCard(reseponseSettleDto);
@@ -270,16 +279,16 @@ public class paymentService {
             }else if(reseponseSettleDto.getMchtId().equals(aboutPayEnums.vbankmehthod.getString())){
                 System.out.println("가상계좌 채번완료");
                 reseponseSettleDto.setVbankStatus(aboutPayEnums.statusReady.getString());
-                reseponseSettleDto.setVbankFlag("false");
                 reseponseSettleDto.setVtlAcntNo(aesToNomal(reseponseSettleDto.getVtlAcntNo()));
                 vbankService.insertVbank(reseponseSettleDto);
             }
-            if(reseponseSettleDto.getMchtTrdNo().startsWith(aboutPayEnums.reservation.getString())){
+            if(mchtTrdNo.startsWith(aboutPayEnums.reservation.getString())){
                 System.out.println("예약 상품 검증완료");
                 reservationService.tempToMain(reseponseSettleDto);
                 //throw new Exception("test");
-            }else {
-                System.out.println("일반 상품 검증완료");
+            }else if(mchtTrdNo.startsWith(aboutPayEnums.food.getString())) {
+                System.out.println("음식 상품 검증완료");
+                foodService.tempToMain(reseponseSettleDto);
             }
             JSONObject jsonObject=new JSONObject();
             jsonObject.put("bool", true);

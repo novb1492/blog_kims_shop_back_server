@@ -5,6 +5,7 @@ public enum aboutPayEnums {
     statusPaid("paid"),
     statusReady("ready"),
     reservation("reservation"),
+    food("food"),
     product("product"),
     kakaoPay("kakaoPay"),
     vbank("vbank"),

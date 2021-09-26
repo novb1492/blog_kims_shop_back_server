@@ -35,7 +35,6 @@ public class reseponseSettleDto {
     ///환불시 쓰는것들
     private int cnclOrd;
     private String vbankStatus;
-    private String vbankFlag;
     private String cnclAmt;
     private String refundBankCd;
     private String refundAcntNo;

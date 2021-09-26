@@ -150,6 +150,7 @@ public class jwtService {
         return refreshToken;
     }
     public void makeNewAccessToken(HttpServletRequest request,HttpServletResponse response) {
+        System.out.println("makeNewAccessToken");
         Cookie[] cookies=request.getCookies();
         String refreshToken=null;
         for(Cookie c:cookies){
