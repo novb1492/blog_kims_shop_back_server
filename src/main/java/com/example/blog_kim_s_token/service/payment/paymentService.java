@@ -45,6 +45,8 @@ public class paymentService {
     private RestTemplate restTemplate=new RestTemplate();
     private HttpHeaders headers=new HttpHeaders();
     private JSONObject body=new JSONObject();
+    private final String reservationString=aboutPayEnums.reservation.getString();
+    private final String foodString=aboutPayEnums.food.getString();
 
     @Autowired
     private productService priceService;
@@ -73,7 +75,7 @@ public class paymentService {
         System.out.println("getVbankDate");
         String expiredDate=null;
         try {
-            if(kind.equals(aboutPayEnums.reservation.getString())){
+            if(kind.equals(reservationString)){
                 Calendar getToday = Calendar.getInstance();
                 getToday.setTime(new Date()); 
                 String requestDate=year+"-"+month+"-"+date;
@@ -173,7 +175,7 @@ public class paymentService {
                 itemName+=",";
             }
             count+=Integer.parseInt(itemArray[i][1]);
-            if(kind.equals(aboutPayEnums.reservation.getString())){
+            if(kind.equals(reservationString)){
                 System.out.println("예약 상품 입니다 시간 분리 시작");
                 timesOrSize.add(Integer.parseInt(itemArray[i][2]));
                 if(i==itemArraySize-1){
@@ -255,7 +257,7 @@ public class paymentService {
     }
     private void inertTemp(getHashInfor getHashInfor,String email,String mchtTrdNo,String name,String mchtCustId,String kind) {
         System.out.println("inertTemp");
-        if(kind.equals(aboutPayEnums.reservation.getString())){
+        if(kind.equals(reservationString)){
             System.out.println("예약 임시 테이블 저장");
             reservationService.insertTemp(getHashInfor,email,mchtTrdNo,name,mchtCustId);
         }else if(kind.equals(aboutPayEnums.food.getString())) {
@@ -267,6 +269,7 @@ public class paymentService {
     public JSONObject confrimSettle(reseponseSettleDto reseponseSettleDto) {
         System.out.println("confrimSettle");
         try {
+            String kind="";
             String trdAmt =aesToNomal(reseponseSettleDto.getTrdAmt());
             reseponseSettleDto.setTrdAmt(trdAmt);
             userDto userDto=userService.sendUserDto();
@@ -282,17 +285,20 @@ public class paymentService {
                 reseponseSettleDto.setVtlAcntNo(aesToNomal(reseponseSettleDto.getVtlAcntNo()));
                 vbankService.insertVbank(reseponseSettleDto);
             }
-            if(mchtTrdNo.startsWith(aboutPayEnums.reservation.getString())){
+            if(mchtTrdNo.startsWith(reservationString)){
                 System.out.println("예약 상품 검증완료");
                 reservationService.tempToMain(reseponseSettleDto);
+                kind=reservationString;
                 //throw new Exception("test");
             }else if(mchtTrdNo.startsWith(aboutPayEnums.food.getString())) {
                 System.out.println("음식 상품 검증완료");
                 foodService.tempToMain(reseponseSettleDto);
+                kind=foodString;
             }
             JSONObject jsonObject=new JSONObject();
             jsonObject.put("bool", true);
             jsonObject.put("messege", "완료되었습니다");
+            jsonObject.put("kind", kind);
             return jsonObject;
         } catch (Exception e) {
             e.printStackTrace();
@@ -379,7 +385,7 @@ public class paymentService {
             List<Integer>cancleIds=tryCancleDto.getIds();
             List<getClientInter>clientInters=new ArrayList<>();
             String kind=aboutPayEnums.valueOf(tryCancleDto.getKind()).getString();
-            if(kind.equals(aboutPayEnums.reservation.getString())){
+            if(kind.equals(reservationString)){
                 System.out.println("예약 상품 테이블 삭제");
                 clientInters=reservationService.deleteReservationDb(cancleIds);
             }else if(kind.equals(aboutPayEnums.product.getString())){

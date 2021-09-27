@@ -95,7 +95,7 @@ public class jwtAuthorizationFilter  extends BasicAuthenticationFilter {
                         throw new JWTDecodeException(null);
                     }
 
-                    userDto userDto=dao.findById(userid).orElseThrow(()->new RuntimeException("존재하지 않는 회원입니다"));
+                    userDto userDto=dao.findById(userid).orElseThrow(()->new IllegalArgumentException("존재하지 않는 회원입니다"));
                     jwtService.setSecuritySession(jwtService.makeAuthentication(userDto));
                     
                    
