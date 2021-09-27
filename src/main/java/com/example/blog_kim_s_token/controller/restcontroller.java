@@ -27,6 +27,7 @@ import com.example.blog_kim_s_token.model.user.pwdDto;
 import com.example.blog_kim_s_token.model.user.singupDto;
 import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.boardService;
+import com.example.blog_kim_s_token.service.productService;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
@@ -68,6 +69,8 @@ public class restcontroller {
     private boardService boardService;
     @Autowired
     private jwtService jwtService;
+    @Autowired
+    private productService productService;
 
 
     @PostMapping("/auth/confrimEmail")
@@ -258,6 +261,11 @@ public class restcontroller {
         System.out.println("confrimSettle");
         System.out.println(reseponseSettleDto.toString());
         return paymentService.confrimSettle(reseponseSettleDto);
+    }
+    @PostMapping("/api/getItems")
+    public JSONObject getItem(HttpServletRequest request,HttpServletResponse response) {
+        System.out.println("getItems");
+        return productService.getItems(request);
     }
     @PostMapping("/api/v1/user/test")
     public JSONObject  user(HttpServletRequest request,HttpServletResponse response) {

@@ -2,7 +2,6 @@ package com.example.blog_kim_s_token.service;
 
 import java.util.List;
 
-import com.amazonaws.services.managedblockchain.model.IllegalActionException;
 import com.example.blog_kim_s_token.model.article.articleDao;
 import com.example.blog_kim_s_token.model.article.articleDto;
 import com.example.blog_kim_s_token.model.article.getArticleDto;
@@ -46,6 +45,6 @@ public class boardService {
         return articleDao.findAll();
     }
     public articleDto getArticle(getArticleDto getArticleDto) {
-        return articleDao.findById(getArticleDto.getArticleId()).orElseThrow(()-> new IllegalActionException("존재하지 않는 게시물입니다"));
+        return articleDao.findById(getArticleDto.getArticleId()).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 게시물입니다"));
     }
 }

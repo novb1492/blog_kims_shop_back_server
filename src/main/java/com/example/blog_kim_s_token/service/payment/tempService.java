@@ -23,7 +23,7 @@ public class tempService {
     }
     public tempPaidDto selectByMchtTrdNo(String mchtTrdNo) {
         System.out.println("selectByMchtTrdNo");
-        return tempPaidDao.findByTpaymentid(mchtTrdNo).orElseThrow(()->new RuntimeException("결제 요청 정보가 없습니다"));
+        return tempPaidDao.findByTpaymentid(mchtTrdNo).orElseThrow(()->new IllegalArgumentException("결제 요청 정보가 없습니다"));
     }
     public void deleteByMchtTrdNo(String mchtTrdNo) {
         System.out.println("deleteByMchtTrdNo");

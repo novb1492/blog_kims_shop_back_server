@@ -135,7 +135,7 @@ public class vbankService {
             String trdDtm=reseponseSettleDto.getTrdDtm();
             trdDtm=trdDtm.substring(0, 4)+"-"+trdDtm.substring(4, 6)+"-"+trdDtm.substring(6, 8)+" "+trdDtm.substring(8,10)+":"+trdDtm.substring(10,12)+":"+trdDtm.substring(12,14);
             System.out.println(trdDtm+" 날짜");
-            insertvbankDto insertvbankDto=vbankDao.findByVmchtTrdNo(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalAccessError("vbank에 내역이 존재 하지 않습니다"));
+            insertvbankDto insertvbankDto=vbankDao.findByVmchtTrdNo(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalArgumentException("vbank에 내역이 존재 하지 않습니다"));
             if(insertvbankDto.getVbankstatus().equals(aboutPayEnums.statusReady.getString())){
                 System.out.println("vbank 입금확인처리 ");
                 insertvbankDto.setVbankstatus(aboutPayEnums.statusPaid.getString()); 

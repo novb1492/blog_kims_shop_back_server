@@ -45,7 +45,7 @@ public class foodService {
     public void tempToMain(reseponseSettleDto reseponseSettleDto) {
         System.out.println("insertMain");
         try {
-            List<tempFoodDto> tempFoodDtos=tempFoodDao.findByTfpaymentid(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalAccessException("임시 음식테이블에서 찾을 수없습니다"));
+            List<tempFoodDto> tempFoodDtos=tempFoodDao.findByTfpaymentid(reseponseSettleDto.getMchtTrdNo()).orElseThrow(()->new IllegalArgumentException("임시 음식테이블에서 찾을 수없습니다"));
             for(tempFoodDto f:tempFoodDtos){
                 productService.minusProductCount(f.getTfood_name(), f.getTf_count());
                 foodDto dto=foodDto.builder()

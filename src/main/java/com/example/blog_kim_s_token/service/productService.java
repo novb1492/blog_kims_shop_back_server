@@ -1,12 +1,16 @@
 package com.example.blog_kim_s_token.service;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.example.blog_kim_s_token.enums.priceEnums;
 import com.example.blog_kim_s_token.model.product.productDao;
 import com.example.blog_kim_s_token.model.product.productDto;
-
+import com.nimbusds.jose.shaded.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +25,7 @@ public class productService {
     
     public productDto selectProduct(String productName) {
         Optional<productDto> optional=productDao.findByProductName(productName);
-        optional.orElseThrow(()->new IllegalAccessError("존재하지 않는 상품입니다"));
+        optional.orElseThrow(()->new IllegalArgumentException("존재하지 않는 상품입니다"));
         return optional.get();
     }
     public int responeTotalprice(String[][] productNameAndCount) {
@@ -75,7 +79,7 @@ public class productService {
     public void minusProductCount(String productName,int count) {
         System.out.println("minusProductCount");
         try {
-            productDto productDto=productDao.findByProductName(productName).orElseThrow(()->new IllegalAccessException("존재하지 않는 제품입니다"));
+            productDto productDto=productDao.findByProductName(productName).orElseThrow(()->new IllegalArgumentException("존재하지 않는 제품입니다"));
             int originCount=productDto.getCount();
             int newCount=originCount-count;
             if(newCount<=0){
@@ -88,5 +92,27 @@ public class productService {
             throw new RuntimeException(e.getMessage());
         }
     }
-
+    public JSONObject getItems(HttpServletRequest request) {
+        System.out.println("getItems");
+        try {
+            String bigKind=request.getParameter("bigkind");
+            String kind=request.getParameter("kind");
+            List<productDto>productDtos=productDao.findByBigKindAndKindNative(bigKind, kind).orElseThrow(()->new IllegalArgumentException("존재하지 않는 카테고리입니다"));
+            JSONObject jsonObject=new JSONObject();
+            List<JSONObject>jsonObjects=new ArrayList<>();
+            for(productDto p: productDtos){
+                JSONObject data=new JSONObject();
+                data.put("productName",p.getProductName());
+                data.put("count",p.getCount());
+                data.put("price", p.getPrice());
+                jsonObjects.add(data);
+            }
+            jsonObject.put("itmes", jsonObjects);
+            return jsonObject;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("getItems error"+e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 }
