@@ -3,18 +3,16 @@ package com.example.blog_kim_s_token.service.aritcle;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
+
 
 import com.example.blog_kim_s_token.model.article.articleDao;
 import com.example.blog_kim_s_token.model.article.articleDto;
-import com.example.blog_kim_s_token.model.article.getArticleDto;
+
 import com.example.blog_kim_s_token.model.article.insertArticleDto;
 import com.example.blog_kim_s_token.service.utillService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -52,12 +50,13 @@ public class boardService {
     }
     public JSONObject getAllArticles(getAllArticleDto getAllArticleDto) {
         System.out.println("getAllArticles");
-        List<articleDto>jsonObjects=new ArrayList<>();
+        List<getAllArticleinter>jsonObjects=new ArrayList<>();
         int nowPage=getAllArticleDto.getNowPage();
+        String title=getAllArticleDto.getTitle();
         try {
-            int totalPage=utillService.getTotalpages(articleDao.countAllNative(), pagesize);
-            List<articleDto>array=makeList(getAllArticleDto.getTitle(), nowPage);
-            for(articleDto a:array){
+            List<getAllArticleinter>array=makeList(title, nowPage);
+            int totalPage=utillService.getTotalpages(array.get(0).getTotalcount(),pagesize);
+            for(getAllArticleinter a:array){
                 jsonObjects.add(a);
             }
             JSONObject response=new JSONObject();
@@ -72,13 +71,15 @@ public class boardService {
             throw new RuntimeException(e.getMessage());
         }
     }
-    private  List<articleDto> makeList(String title,int nowPage) {
+    private  List<getAllArticleinter> makeList(String title,int nowPage) {
         System.out.println("makeList");
+        System.out.println(title+"타이틀");
         if(title==null){
             return articleDao.findALLOrderByDescBidLimiteNative(utillService.getFirst(nowPage, pagesize)-1, pagesize).orElseThrow(()->new RuntimeException("글이 존재 하지않습니다"));
         }
         return articleDao.findByTitleOrderByDescBidLimiteNative(title,utillService.getFirst(nowPage, pagesize)-1, pagesize).orElseThrow(()->new RuntimeException("글이 존재 하지않습니다"));
     }
+
 
 
 }
