@@ -146,7 +146,6 @@ public class utillService {
         if(totalCount%pagesize>0){
             totalpage++;
         }
-        System.out.println(totalpage+"전체페이지");
         if(totalpage==0){
             totalpage=1;
         }

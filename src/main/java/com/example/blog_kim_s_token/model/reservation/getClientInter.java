@@ -3,6 +3,8 @@ package com.example.blog_kim_s_token.model.reservation;
 import java.sql.Timestamp;
 
 public interface getClientInter {
+    //총개수
+    int getTotalpage();
     //reservation
     String getId();
     String getSeat();

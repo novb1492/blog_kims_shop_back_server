@@ -32,7 +32,7 @@ public class reservationService {
     private final int maxPeopleOfDay=60;
     private final int maxPeopleOfTime=6;
     private final int cantFlag=100;
-    private final int pagingNum=10;
+    private final int pagesize=10;
 
     @Value("${payment.minusHour}")
     private  int minusHour;
@@ -289,15 +289,16 @@ public class reservationService {
             JSONObject respone=new JSONObject();
             int nowPage=(int) JSONObject.get("nowPage")+1;
             String email=SecurityContextHolder.getContext().getAuthentication().getName();
-            int totalPage=getTotalPage(email, startDate, endDate);
+            List<getClientInter>dtoArray=getClientReservationDTO(email,startDate,endDate,nowPage);
+            String[][] array=makeResponse(respone, dtoArray);
+
+            int totalPage=utillService.getTotalpages(dtoArray.get(0).getTotalpage(), pagesize);
             reservationEnums enums=confrimDateAndPage(nowPage,totalPage,startDate,endDate);
             if(enums.getBool()==false){
                 System.out.println("조건 안맞음");
                 return utillService.makeJson(enums.getBool(), enums.getMessege());
             }
-            List<getClientInter>dtoArray=getClientReservationDTO(email,startDate,endDate,nowPage,totalPage,respone);
-            String[][] array=makeResponse(respone, dtoArray);
-
+            respone.put("totalPage", totalPage);
             respone.put("bool", true);
             respone.put("nowPage", nowPage);
             respone.put("reservations", array);
@@ -325,34 +326,26 @@ public class reservationService {
         reservationEnums.valueOf(enumName).setMessete(messege);
         return reservationEnums.valueOf(enumName);
     }
-    private List<getClientInter>getClientReservationDTO(String email,String startDate,String endDate,int nowPage,int totalPage,JSONObject respone){
+    private List<getClientInter>getClientReservationDTO(String email,String startDate,String endDate,int nowPage){
         System.out.println("getClientReservationDTO");
         List<getClientInter>dtoArray=new ArrayList<>();
-        int fisrt=0;
+        int fisrt=utillService.getFirst(nowPage, pagesize);
             if(startDate.isEmpty()&&endDate.isEmpty()){
                 System.out.println("날짜 미지정 검색");
-                fisrt=utillService.getFirst(nowPage, pagingNum);///어디서부터 가져올지
-                //utillService.getEnd(fisrt, pagingNum)-fisrt+1=결국 몇개씩가져올지 였다면 그냥 pagingNum으로대체가능한거아닌가?
-                dtoArray=reservationDao.findByEmailJoinOrderByIdDescNative(email, fisrt-1,pagingNum).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
+                //utillService.getEnd(fisrt, pagingNum)-fisrt+1=결국 몇개씩가져올지 였다면 그냥 pagesize?
+                dtoArray=reservationDao.findByEmailJoinOrderByIdDescNative(email,email, fisrt-1,pagesize).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
             }else{
                 System.out.println("날짜 지정 검색");
-                fisrt=utillService.getFirst(nowPage, pagingNum);
-                dtoArray=reservationDao.findByEmailJoinOrderByIdBetweenDescNative(email,Timestamp.valueOf(startDate+" "+"00:00:00"),Timestamp.valueOf(endDate+" 00:00:00"),fisrt-1,pagingNum).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
+                Timestamp start=Timestamp.valueOf(startDate+" "+"00:00:00");
+                Timestamp end=Timestamp.valueOf(endDate+" 00:00:00");
+                System.out.println(start+"날짜"+end);
+                dtoArray=reservationDao.findByEmailJoinOrderByIdBetweenDescNative(email,start,end,email,start,end,fisrt-1,pagesize).orElseThrow(()-> new IllegalActionException("예약내역이 없습니다"));
             }
-        respone.put("totalPage", totalPage);
         return dtoArray;
-    }
-    private int  getTotalPage(String email,String startDate,String endDate) {
-        System.out.println("getTotalPage");
-        if(startDate.isEmpty()&&endDate.isEmpty()){
-            return utillService.getTotalpages(reservationDao.countByEmail(email), pagingNum);
-        }else if(!startDate.isEmpty()&&!endDate.isEmpty()){
-            return utillService.getTotalpages(reservationDao.countByEmailNative(email,Timestamp.valueOf(startDate+" "+"00:00:00"),Timestamp.valueOf(endDate+" 00:00:00")), pagingNum);
-        }
-        throw new RuntimeException("날짜 선택이 잘못되었습니다");
     }
     private String[][] makeResponse(JSONObject jsonObject,List<getClientInter>dtoArray) {
         System.out.println("makeResponse");
+        System.out.println(dtoArray.toString()+" 배열속");
         String[][] array=new String[dtoArray.size()][9];
         String status=null;
         String usedKind=null;

@@ -23,16 +23,14 @@ public interface reservationDao extends JpaRepository<mainReservationDto,Integer
     @Query(value = "select  * from reservation where email=? AND seat=?",nativeQuery = true)
     List<mainReservationDto>findByEmailNative(String email,String seat);
 
-    @Query(value = "select a.*,b.price,c.*,v.*,k.* from reservation a inner join  product b on a.seat=b.product_name left join card c on a.payment_id=c.cmcht_trd_no left join vbank v on a.payment_id=v.vmcht_trd_no left join kakaopay k on a.payment_id=k.ktid where a.email=? order by a.id desc limit ?,?",nativeQuery = true)
-    Optional<List<getClientInter>> findByEmailJoinOrderByIdDescNative(String email,int nowPage,int totalPage);
+    @Query(value = "select a.*,b.price,c.*,v.*,k.*,(select count(*)from reservation where email=?)totalpage from reservation a inner join  product b on a.seat=b.product_name left join card c on a.payment_id=c.cmcht_trd_no left join vbank v on a.payment_id=v.vmcht_trd_no left join kakaopay k on a.payment_id=k.ktid where a.email=? order by a.id desc limit ?,?",nativeQuery = true)
+    Optional<List<getClientInter>> findByEmailJoinOrderByIdDescNative(String email2,String email,int first,int pagesize);
 
-    @Query(value = "select a.*,b.price,c.*,v.*,k.* from reservation a inner join  product b on a.seat=b.product_name left join card c on a.payment_id=c.cmcht_trd_no left join vbank v on a.payment_id=v.vmcht_trd_no left join kakaopay k on a.payment_id=k.ktid where a.email=? and a.r_date between ? and ? order by a.id desc limit ?,?",nativeQuery = true)
-    Optional<List<getClientInter>>findByEmailJoinOrderByIdBetweenDescNative(String email,Timestamp startDate,Timestamp endDate,int nowPage,int totalPage);
+    @Query(value = "select a.*,b.price,c.*,v.*,k.*,(select count(*)from reservation where email=? and r_date between ? and ?)totalpage from reservation a inner join  product b on a.seat=b.product_name left join card c on a.payment_id=c.cmcht_trd_no left join vbank v on a.payment_id=v.vmcht_trd_no left join kakaopay k on a.payment_id=k.ktid where a.email=? and a.r_date between ? and ? order by a.id desc limit ?,?",nativeQuery = true)
+    Optional<List<getClientInter>>findByEmailJoinOrderByIdBetweenDescNative(String email2,Timestamp startDate2,Timestamp endDate2,String email,Timestamp startDate,Timestamp endDate,int first,int pagesize);
 
     @Query(value = "select count(*) from reservation where email=? and r_date between ? and ?",nativeQuery = true)
     int countByEmailNative(String email,Timestamp startDate,Timestamp endDate);
-
-    int countByEmail(String email);
 
     List<mainReservationDto> findByPaymentId(String paymentId);
 
