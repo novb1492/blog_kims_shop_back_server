@@ -140,6 +140,7 @@ public class utillService {
     } 
     public static int getTotalpages(int totalCount,int pagesize) {
         System.out.println("getTotalpages");
+        System.out.println(totalCount+" 전체개수");
         int totalpage=0;
         totalpage=totalCount/pagesize;
         if(totalCount%pagesize>0){

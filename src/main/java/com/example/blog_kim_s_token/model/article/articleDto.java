@@ -20,14 +20,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-@Table(name = "board")
+@Table(name = "article")
 @Entity
 public class articleDto {
 
     @Id
-    @Column(name="id",nullable = false)
+    @Column(name="bid",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int bid;
     
     @Column(name="title",nullable = false,length = 50)
     private String title;
@@ -35,16 +35,16 @@ public class articleDto {
     @Column(name="textarea",nullable = false,length = 2000)
     private String textarea;
 
-    @Column(name="email",nullable = false)
-    private String email;
+    @Column(name="bemail",nullable = false)
+    private String bemail;
 
-    @Column(name="kind",nullable = false)
-    private String kind;
+    @Column(name="bkind",nullable = false)
+    private String bkind;
 
-    @Column(name="clicked",nullable = false)
-    private int clicked;
+    @Column(name="bclicked",nullable = false)
+    private int bclicked;
 
-    @Column(name="created",nullable = false)
+    @Column(name="bcreated",nullable = false)
     @CreationTimestamp
-    private Timestamp created;
+    private Timestamp bcreated;
 }

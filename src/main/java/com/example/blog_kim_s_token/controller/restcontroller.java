@@ -26,13 +26,14 @@ import com.example.blog_kim_s_token.model.user.phoneDto;
 import com.example.blog_kim_s_token.model.user.pwdDto;
 import com.example.blog_kim_s_token.model.user.singupDto;
 import com.example.blog_kim_s_token.model.user.userDto;
-import com.example.blog_kim_s_token.service.boardService;
 import com.example.blog_kim_s_token.service.productService;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.tryKakaoPayDto;
 import com.example.blog_kim_s_token.service.ApiServies.naver.naverLoginService;
+import com.example.blog_kim_s_token.service.aritcle.boardService;
+import com.example.blog_kim_s_token.service.aritcle.getAllArticleDto;
 import com.example.blog_kim_s_token.service.confrim.confrimService;
 import com.example.blog_kim_s_token.service.fileUpload.fileUploadService;
 import com.example.blog_kim_s_token.service.payment.paymentService;
@@ -208,12 +209,10 @@ public class restcontroller {
         System.out.println("getArticle"); 
         return boardService.getArticle(getArticleDto);
     }
-    @PostMapping("/api/getAllArticle")
-    public articleDto getAllArticle(HttpServletRequest request,HttpServletResponse response) {
+    @PostMapping("/auth/getAllArticle")
+    public JSONObject getAllArticle(@RequestBody getAllArticleDto getAllArticleDto,HttpServletRequest request,HttpServletResponse response) {
         System.out.println("getAllArticle"); 
-        getArticleDto getArticleDto=new getArticleDto();
-        getArticleDto.setArticleId(1);
-        return boardService.getArticle(getArticleDto);
+        return boardService.getAllArticles(getAllArticleDto);
     }
     @PostMapping("/api/kakaoMore")
     public JSONObject kakaoMore(HttpServletRequest request,HttpServletResponse response) {
