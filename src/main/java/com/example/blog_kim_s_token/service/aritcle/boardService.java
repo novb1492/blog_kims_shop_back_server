@@ -3,6 +3,8 @@ package com.example.blog_kim_s_token.service.aritcle;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import com.amazonaws.services.servicequotas.model.IllegalArgumentException;
 import com.example.blog_kim_s_token.model.article.articleDao;
 import com.example.blog_kim_s_token.model.article.articleDto;
@@ -56,6 +58,8 @@ public class boardService {
             boolean f=true;
             JSONObject article=new JSONObject();
             List<JSONObject>coments=new ArrayList<>();
+            int clickUp=getArticleinters.get(0).getBclicked()+1;
+            articleDao.plusClicked(clickUp, bid);
             for(getArticleInter g:getArticleinters){
                 if(f){
                     System.out.println("글담기 시작");
@@ -63,7 +67,7 @@ public class boardService {
                     article.put("email", g.getBemail());
                     article.put("text", g.getTextarea());
                     article.put("created", g.getBcreated());
-                    article.put("clicked", g.getBclicked());
+                    article.put("clicked", clickUp);
                     f=false;
                     System.out.println("글담기 종료");
                 }
