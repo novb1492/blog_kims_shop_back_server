@@ -52,9 +52,11 @@ public class boardService {
         System.out.println("getArticle");
         try {
             int bid=getArticleDto.getBid();
-            int first=utillService.getFirst(1, pagesize);
+            int nowPage=getArticleDto.getPage();
+            int first=utillService.getFirst(nowPage, pagesize);
             List<getArticleInter>getArticleinters=articleDao.findByBidJoinComment(bid, bid,first-1,pagesize).orElseThrow(()->new IllegalArgumentException("존재하지 않는 게시물입니다"));
             int totalPage=utillService.getTotalpages(getArticleinters.get(0).getTotalcount(),pagesize);
+            checkNowpage(nowPage, totalPage);
             boolean f=true;
             JSONObject article=new JSONObject();
             List<JSONObject>coments=new ArrayList<>();
@@ -74,6 +76,7 @@ public class boardService {
                 JSONObject coment=new JSONObject();
                 coment.put("email", g.getCemail());
                 coment.put("text", g.getComent());
+                coment.put("cid", g.getCid());
                 coments.add(coment);
             }
             JSONObject response=new JSONObject();
@@ -96,6 +99,7 @@ public class boardService {
         try {
             List<getAllArticleinter>array=makeList(title, nowPage);
             int totalPage=utillService.getTotalpages(array.get(0).getTotalcount(),pagesize);
+            checkNowpage(nowPage, totalPage);
             for(getAllArticleinter a:array){
                 jsonObjects.add(a);
             }
@@ -114,10 +118,17 @@ public class boardService {
     private  List<getAllArticleinter> makeList(String title,int nowPage) {
         System.out.println("makeList");
         System.out.println(title+"타이틀");
+        int first=utillService.getFirst(nowPage, pagesize);
         if(title==null){
-            return articleDao.findALLOrderByDescBidLimiteNative(utillService.getFirst(nowPage, pagesize)-1, pagesize).orElseThrow(()->new RuntimeException("글이 존재 하지않습니다"));
+            return articleDao.findALLOrderByDescBidLimiteNative(first-1, pagesize).orElseThrow(()->new RuntimeException("글이 존재 하지않습니다"));
         }
-        return articleDao.findByTitleOrderByDescBidLimiteNative(title,utillService.getFirst(nowPage, pagesize)-1, pagesize).orElseThrow(()->new RuntimeException("글이 존재 하지않습니다"));
+        return articleDao.findByTitleOrderByDescBidLimiteNative(title,title,first-1, pagesize).orElseThrow(()->new RuntimeException("글이 존재 하지않습니다"));
+    }
+    private void checkNowpage(int nowPage,int totalPage) {
+        System.out.println("checkNowpage"+ nowPage);
+        if(nowPage>totalPage){
+            throw new RuntimeException("마지막 페이지보다 클수 없습니다");
+        }
     }
 
 
