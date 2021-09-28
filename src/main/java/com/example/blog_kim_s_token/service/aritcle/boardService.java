@@ -3,13 +3,14 @@ package com.example.blog_kim_s_token.service.aritcle;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
+import com.amazonaws.services.servicequotas.model.IllegalArgumentException;
 import com.example.blog_kim_s_token.model.article.articleDao;
 import com.example.blog_kim_s_token.model.article.articleDto;
-
+import com.example.blog_kim_s_token.model.article.getArticleDto;
+import com.example.blog_kim_s_token.model.article.getArticleInter;
 import com.example.blog_kim_s_token.model.article.insertArticleDto;
 import com.example.blog_kim_s_token.service.utillService;
+import com.mysql.cj.xdevapi.JsonArray;
 import com.nimbusds.jose.shaded.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +46,43 @@ public class boardService {
                                     .build();
                                     return dto;
     }
-    public List<articleDto> getArticle() {
-        return articleDao.findAll();
+    public JSONObject getArticle(getArticleDto getArticleDto) {
+        System.out.println("getArticle");
+        try {
+            int bid=getArticleDto.getBid();
+            int first=utillService.getFirst(1, pagesize);
+            List<getArticleInter>getArticleinters=articleDao.findByBidJoinComment(bid, bid,first-1,pagesize).orElseThrow(()->new IllegalArgumentException("존재하지 않는 게시물입니다"));
+            int totalPage=utillService.getTotalpages(getArticleinters.get(0).getTotalcount(),pagesize);
+            boolean f=true;
+            JSONObject article=new JSONObject();
+            List<JSONObject>coments=new ArrayList<>();
+            for(getArticleInter g:getArticleinters){
+                if(f){
+                    System.out.println("글담기 시작");
+                    article.put("title", g.getTitle());
+                    article.put("email", g.getBemail());
+                    article.put("text", g.getTextarea());
+                    article.put("created", g.getBcreated());
+                    article.put("clicked", g.getBclicked());
+                    f=false;
+                    System.out.println("글담기 종료");
+                }
+                JSONObject coment=new JSONObject();
+                coment.put("email", g.getCemail());
+                coment.put("text", g.getComent());
+                coments.add(coment);
+            }
+            JSONObject response=new JSONObject();
+            response.put("bool", true);
+            response.put("article", article);
+            response.put("coments", coments);
+            response.put("totalPage", totalPage);
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("getArticle error"+e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
     }
     public JSONObject getAllArticles(getAllArticleDto getAllArticleDto) {
         System.out.println("getAllArticles");

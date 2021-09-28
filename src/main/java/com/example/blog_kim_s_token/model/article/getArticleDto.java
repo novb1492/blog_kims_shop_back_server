@@ -9,5 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 public class getArticleDto {
     @Min(value = 1,message = "잘못된 글번호입니다")
-    private int articleId;
+    private int bid;
+
+    @Min(value = 1,message = "페이지가 1보다 작습니다")
+    private int page;
 }

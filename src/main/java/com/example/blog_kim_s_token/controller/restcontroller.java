@@ -204,13 +204,13 @@ public class restcontroller {
         System.out.println("insertArticle"); 
         return boardService.insertArticle(insertArticleDto);
     }
-    @PostMapping("/api/getArticle")
-    public articleDto getArticle(@Valid @RequestBody getArticleDto getArticleDto,HttpServletResponse response) {
+    @PostMapping("/auth/getArticle")
+    public JSONObject getArticle(@Valid @RequestBody getArticleDto getArticleDto,HttpServletResponse response) {
         System.out.println("getArticle"); 
-        return boardService.getArticle(getArticleDto);
+        return  boardService.getArticle(getArticleDto);
     }
     @PostMapping("/auth/getAllArticle")
-    public JSONObject getAllArticle(@RequestBody getAllArticleDto getAllArticleDto,HttpServletRequest request,HttpServletResponse response) {
+    public JSONObject getAllArticle(@Valid @RequestBody getAllArticleDto getAllArticleDto,HttpServletRequest request,HttpServletResponse response) {
         System.out.println("getAllArticle"); 
         return boardService.getAllArticles(getAllArticleDto);
     }
