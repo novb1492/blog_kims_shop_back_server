@@ -290,8 +290,7 @@ public class reservationService {
             int nowPage=(int) JSONObject.get("nowPage")+1;
             String email=SecurityContextHolder.getContext().getAuthentication().getName();
             List<getClientInter>dtoArray=getClientReservationDTO(email,startDate,endDate,nowPage);
-            String[][] array=makeResponse(respone, dtoArray);
-
+           
             int totalPage=utillService.getTotalpages(dtoArray.get(0).getTotalpage(), pagesize);
             reservationEnums enums=confrimDateAndPage(nowPage,totalPage,startDate,endDate);
             if(enums.getBool()==false){
@@ -301,7 +300,7 @@ public class reservationService {
             respone.put("totalPage", totalPage);
             respone.put("bool", true);
             respone.put("nowPage", nowPage);
-            respone.put("reservations", array);
+            respone.put("reservations", makeResponse(respone, dtoArray));
             return respone;
         } catch (Exception e) {
             e.printStackTrace();
@@ -343,20 +342,21 @@ public class reservationService {
             }
         return dtoArray;
     }
-    private String[][] makeResponse(JSONObject jsonObject,List<getClientInter>dtoArray) {
+    private List<JSONObject> makeResponse(JSONObject jsonObject,List<getClientInter>dtoArray) {
         System.out.println("makeResponse");
         System.out.println(dtoArray.toString()+" 배열속");
-        String[][] array=new String[dtoArray.size()][9];
         String status=null;
         String usedKind=null;
         String paidDate=null;
         String paidPrice=null;
-            int temp=0;
+        Boolean flag=true;
+        List<JSONObject>jsons=new ArrayList<>();
             for(getClientInter m:dtoArray){
-                array[temp][0]=m.getId();
-                array[temp][1]=m.getSeat();
-                array[temp][2]=m.getCreated().toString();
-                array[temp][3]=m.getDate_and_time().toString();
+                JSONObject itemInfor=new JSONObject();
+                itemInfor.put("id", m.getId());
+                itemInfor.put("seat", m.getSeat());
+                itemInfor.put("created", m.getCreated().toString().substring(0, 19));
+                itemInfor.put("dateAndTime", m.getDate_and_time().toString().substring(0, 19));
                 if(m.getCid()!=null){
                     System.out.println("카드결제 예약");
                     status="결제완료";
@@ -384,17 +384,20 @@ public class reservationService {
                     paidDate=m.getK_created().toString();
                     paidPrice=m.getPrice()+"";
                 }
-                array[temp][4]=status;
-                array[temp][5]=usedKind;
-                array[temp][6]=paidDate;
-                array[temp][7]=paidPrice;
+                itemInfor.put("status", status);
+                itemInfor.put("usedKind", usedKind);
+                itemInfor.put("paidDate", paidDate);
+                itemInfor.put("paidPrice", paidPrice);
                 if(LocalDateTime.now().plusHours(limitedCancleHour).isAfter(m.getDate_and_time().toLocalDateTime())){
                     System.out.println("현재시간이 사용시간 이후입니다");
-                    array[temp][8]=Integer.toString(cantFlag);
+                    flag=true;
+                }else{
+                    flag=false;
                 }
-                temp++;
+                itemInfor.put("cantflag", flag);
+                jsons.add(itemInfor);
             }
-        return array;
+        return jsons;
     }
     public List<getClientInter> deleteReservationDb(List<Integer>ids) {
         System.out.println("cancleReservation");

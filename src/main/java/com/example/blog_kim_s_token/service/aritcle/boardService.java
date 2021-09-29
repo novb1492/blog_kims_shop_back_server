@@ -3,7 +3,7 @@ package com.example.blog_kim_s_token.service.aritcle;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.Transactional;
+
 
 import com.amazonaws.services.servicequotas.model.IllegalArgumentException;
 import com.example.blog_kim_s_token.model.article.articleDao;
@@ -12,9 +12,7 @@ import com.example.blog_kim_s_token.model.article.getArticleDto;
 import com.example.blog_kim_s_token.model.article.getArticleInter;
 import com.example.blog_kim_s_token.model.article.insertArticleDto;
 import com.example.blog_kim_s_token.service.utillService;
-import com.mysql.cj.xdevapi.JsonArray;
 import com.nimbusds.jose.shaded.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -93,18 +91,30 @@ public class boardService {
     }
     public JSONObject getAllArticles(getAllArticleDto getAllArticleDto) {
         System.out.println("getAllArticles");
-        List<getAllArticleinter>jsonObjects=new ArrayList<>();
         int nowPage=getAllArticleDto.getNowPage();
         String title=getAllArticleDto.getTitle();
         try {
             List<getAllArticleinter>array=makeList(title, nowPage);
+            if(array.size()==0){
+                throw new RuntimeException("검색결과가 없습니다");
+            }
             int totalPage=utillService.getTotalpages(array.get(0).getTotalcount(),pagesize);
             checkNowpage(nowPage, totalPage);
+            List<JSONObject>articles=new ArrayList<>();
             for(getAllArticleinter a:array){
-                jsonObjects.add(a);
+                JSONObject article=new JSONObject();
+                article.put("id", a.getBid());
+                article.put("writer", a.getBemail());
+                article.put("click", a.getBclicked());
+                article.put("created", a.getBcreated().toString().replace("T", " ").substring(0, 19));
+                article.put("title", a.getTitle());
+                article.put("text", a.getTextarea());
+                article.put("kind", a.getBkind());
+                articles.add(article);
             }
             JSONObject response=new JSONObject();
-            response.put("articles", array);
+            response.put("bool", true);
+            response.put("articles", articles);
             response.put("totalPage",totalPage);
             response.put("nowPage", nowPage);
             return response;
@@ -130,6 +140,7 @@ public class boardService {
             throw new RuntimeException("마지막 페이지보다 클수 없습니다");
         }
     }
+    
 
 
 
