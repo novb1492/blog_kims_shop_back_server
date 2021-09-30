@@ -4,14 +4,15 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.nimbusds.jose.shaded.json.JSONObject;
 
@@ -19,7 +20,7 @@ import com.nimbusds.jose.shaded.json.JSONObject;
 
 
 public class utillService {
-    
+     
     public static boolean checkDate(Timestamp timestamp,int refreshTokenValidity) {
         System.out.println(timestamp+"토큰 기간");
         System.out.println("날짜 비교 시작");
@@ -174,7 +175,16 @@ public class utillService {
             throw new RuntimeException();
         }
     }
-
+    public static List<String> getImgSrc(String text) {
+    	System.out.println("getImgSrc");
+    	List<String>array=new ArrayList<>();
+    	Pattern nonValidPattern = Pattern.compile("<img[^>]*src=[\"']?([^>\"']+)[\"']?[^>]*>");
+		Matcher matcher = nonValidPattern.matcher(text);
+		while (matcher.find()) {
+			array.add(matcher.group(1));
+		}
+		return array;
+	}
 
 
 }

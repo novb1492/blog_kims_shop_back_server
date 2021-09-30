@@ -12,7 +12,6 @@ import javax.validation.Valid;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.example.blog_kim_s_token.jwt.jwtService;
-import com.example.blog_kim_s_token.model.article.articleDto;
 import com.example.blog_kim_s_token.model.article.getArticleDto;
 import com.example.blog_kim_s_token.model.article.insertArticleDto;
 import com.example.blog_kim_s_token.model.confrim.emailCofrimDto;
@@ -34,6 +33,7 @@ import com.example.blog_kim_s_token.service.ApiServies.kakao.tryKakaoPayDto;
 import com.example.blog_kim_s_token.service.ApiServies.naver.naverLoginService;
 import com.example.blog_kim_s_token.service.aritcle.boardService;
 import com.example.blog_kim_s_token.service.aritcle.model.getAllArticleDto;
+import com.example.blog_kim_s_token.service.aritcle.model.tryDeleteArticleDto;
 import com.example.blog_kim_s_token.service.aritcle.model.tryUpdateArticleDto;
 import com.example.blog_kim_s_token.service.confrim.confrimService;
 import com.example.blog_kim_s_token.service.fileUpload.fileUploadService;
@@ -276,6 +276,11 @@ public class restcontroller {
     public JSONObject updateArticle(@Valid @RequestBody tryUpdateArticleDto tryUpdateArticleDto,HttpServletResponse response) {
         System.out.println("updateArticle");
         return boardService.updateArticle(tryUpdateArticleDto);
+    }
+    @PostMapping("/api/deleteArticle")
+    public JSONObject deleteArticle(@Valid @RequestBody tryDeleteArticleDto tryDeleteArticleDto,HttpServletResponse response) {
+        System.out.println("updateArticle");
+        return boardService.deleteArticle(tryDeleteArticleDto);
     }
     @PostMapping("/api/v1/user/test")
     public JSONObject  user(HttpServletRequest request,HttpServletResponse response) {

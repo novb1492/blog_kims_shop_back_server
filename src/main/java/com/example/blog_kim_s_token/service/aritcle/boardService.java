@@ -15,7 +15,9 @@ import com.example.blog_kim_s_token.model.user.userDto;
 import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.aritcle.model.getAllArticleDto;
+import com.example.blog_kim_s_token.service.aritcle.model.tryDeleteArticleDto;
 import com.example.blog_kim_s_token.service.aritcle.model.tryUpdateArticleDto;
+import com.example.blog_kim_s_token.service.fileUpload.aws.awsService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +32,8 @@ public class boardService {
     private articleDao articleDao;
     @Autowired
     private userService userService;
+    @Autowired
+    private awsService awsService;
 
     public JSONObject insertArticle(insertArticleDto insertArticleDto) {
         System.out.println("insertArticle");
@@ -189,6 +193,32 @@ public class boardService {
             e.printStackTrace();
             System.out.println("getArticle error"+e.getMessage());
             throw new RuntimeException(e.getMessage());
+        }
+    }
+    public JSONObject deleteArticle(tryDeleteArticleDto tryDeleteArticleDto) {
+        System.out.println("deleteArticle");
+        try {
+            articleDto articleDto=articleDao.findById(tryDeleteArticleDto.getBid()).orElseThrow(()->new IllegalArgumentException("존재하지 않는 게시글입니다"));
+            userDto userDto=userService.sendUserDto();
+            confrimUpdateArticle(articleDto.getBemail(),userDto.getEmail());
+            List<String>articleImages=utillService.getImgSrc(articleDto.getTextarea());
+            deleteImages(articleImages);
+            articleDao.delete(articleDto);
+            return utillService.makeJson(true, "글수정 성공");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("getArticle error"+e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+    private void deleteImages(List<String>articleImages) {
+        System.out.println("deleteImages");
+        if(articleImages.isEmpty()){
+            System.out.println("이미지가 없는 게시글 삭제");
+            return;
+        }
+        for(String s: articleImages){
+            awsService.deleteFile(s);
         }
     }
     

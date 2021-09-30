@@ -15,8 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class awsService {
-    //private final String  imageBucktetName="kimsshop/images";
-    //private final String  fileBucktetName="kimsshop/file";
+    private final String  imageBucktetName="kimsshop/images";
+    private final String  fileBucktetName="kimsshop/file";
     
     @Autowired
     private AmazonS3 amazonS3;
@@ -30,8 +30,10 @@ public class awsService {
         System.out.println("파일업로드 완료");
         return saveName;
     }
-    public void deleteFile(String fileName,String bucketName) {
-        amazonS3.deleteObject(bucketName, fileName);
+    public void deleteImage(String fileName) {
+        amazonS3.deleteObject(imageBucktetName, fileName);
+    }public void deleteFile(String fileName) {
+        amazonS3.deleteObject(fileBucktetName, fileName);
     }
     private File convert(MultipartFile multipartFile) {
         System.out.println("convert");
