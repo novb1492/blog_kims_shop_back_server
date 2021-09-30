@@ -217,8 +217,11 @@ public class boardService {
             System.out.println("이미지가 없는 게시글 삭제");
             return;
         }
+        String [] split=null;
         for(String s: articleImages){
-            awsService.deleteFile(s);
+            split=s.split("/");
+            System.out.println(split[5]);
+            awsService.deleteImage(split[5]);
         }
     }
     
