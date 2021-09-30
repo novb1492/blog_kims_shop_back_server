@@ -1,4 +1,4 @@
-package com.example.blog_kim_s_token.service.aritcle;
+package com.example.blog_kim_s_token.service.aritcle.model;
 
 import javax.validation.constraints.Min;
 

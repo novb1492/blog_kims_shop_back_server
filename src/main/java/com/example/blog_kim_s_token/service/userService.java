@@ -2,6 +2,8 @@ package com.example.blog_kim_s_token.service;
 
 
 
+import java.util.Optional;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -134,7 +136,9 @@ public class userService {
         principaldetail principaldetail=(com.example.blog_kim_s_token.config.principaldetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); 
         userDto userDto= principaldetail.getUserDto();
         userDto.setPwd(null);
-        return userDto;
+        Optional<userDto>optional=Optional.ofNullable(userDto);
+        optional.orElseThrow(()->new IllegalArgumentException("로그인 정보가 없습니다"));
+        return optional.get();
     }
     public JSONObject updateAddress(addressDto addressDto) {
         System.out.println("updateAddress");

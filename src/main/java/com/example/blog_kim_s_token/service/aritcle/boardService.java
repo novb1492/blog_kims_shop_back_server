@@ -11,11 +11,16 @@ import com.example.blog_kim_s_token.model.article.articleDto;
 import com.example.blog_kim_s_token.model.article.getArticleDto;
 import com.example.blog_kim_s_token.model.article.getArticleInter;
 import com.example.blog_kim_s_token.model.article.insertArticleDto;
+import com.example.blog_kim_s_token.model.user.userDto;
+import com.example.blog_kim_s_token.service.userService;
 import com.example.blog_kim_s_token.service.utillService;
+import com.example.blog_kim_s_token.service.aritcle.model.getAllArticleDto;
+import com.example.blog_kim_s_token.service.aritcle.model.tryUpdateArticleDto;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class boardService {
@@ -23,6 +28,8 @@ public class boardService {
     private final int pagesize=10;
     @Autowired
     private articleDao articleDao;
+    @Autowired
+    private userService userService;
 
     public JSONObject insertArticle(insertArticleDto insertArticleDto) {
         System.out.println("insertArticle");
@@ -63,6 +70,7 @@ public class boardService {
             for(getArticleInter g:getArticleinters){
                 if(f){
                     System.out.println("글담기 시작");
+                    article.put("bid", g.getBid());
                     article.put("title", g.getTitle());
                     article.put("email", g.getBemail());
                     article.put("text", g.getTextarea());
@@ -71,11 +79,13 @@ public class boardService {
                     f=false;
                     System.out.println("글담기 종료");
                 }
+               if(g.getC_created()!=null){
                 JSONObject coment=new JSONObject();
                 coment.put("email", g.getCemail());
                 coment.put("text", g.getComent());
                 coment.put("cid", g.getCid());
                 coments.add(coment);
+               }
             }
             JSONObject response=new JSONObject();
             response.put("bool", true);
@@ -138,6 +148,47 @@ public class boardService {
         System.out.println("checkNowpage"+ nowPage);
         if(nowPage>totalPage){
             throw new RuntimeException("마지막 페이지보다 클수 없습니다");
+        }
+    }
+    public JSONObject getArticle(int bid) {
+        System.out.println("getArticle");
+        try {
+            articleDto articleDto=articleDao.findById(bid).orElseThrow(()->new IllegalArgumentException("존재하지 않는 게시글입니다"));
+            userDto userDto=userService.sendUserDto();
+            confrimUpdateArticle(articleDto.getBemail(),userDto.getEmail());
+            JSONObject response=new JSONObject();
+            response.put("bool", true);
+            response.put("title", articleDto.getTitle());
+            response.put("text", articleDto.getTextarea());
+            return response;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("getArticle error"+e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+    private void confrimUpdateArticle(String email,String loginEmail) {
+        System.out.println("confrimUpdateArticle");
+        if(!email.equals(loginEmail)){
+            throw new RuntimeException("작성자가 일치 하지 않습니다");
+        }
+        System.out.println("글 수정 검사통과");
+    }
+    @Transactional(rollbackFor = Exception.class)
+    public JSONObject updateArticle(tryUpdateArticleDto tryUpdateArticleDto) {
+        System.out.println("updateArticle");
+        try {
+            articleDto articleDto=articleDao.findById(tryUpdateArticleDto.getBid()).orElseThrow(()->new IllegalArgumentException("존재하지 않는 게시글입니다"));
+            userDto userDto=userService.sendUserDto();
+            confrimUpdateArticle(articleDto.getBemail(),userDto.getEmail());
+            articleDto.setTitle(tryUpdateArticleDto.getTitle());
+            articleDto.setTextarea(tryUpdateArticleDto.getTextarea());
+            return utillService.makeJson(true, "글수정 성공");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("getArticle error"+e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
     

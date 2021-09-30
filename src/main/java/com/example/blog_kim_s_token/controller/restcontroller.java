@@ -33,7 +33,8 @@ import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.tryKakaoPayDto;
 import com.example.blog_kim_s_token.service.ApiServies.naver.naverLoginService;
 import com.example.blog_kim_s_token.service.aritcle.boardService;
-import com.example.blog_kim_s_token.service.aritcle.getAllArticleDto;
+import com.example.blog_kim_s_token.service.aritcle.model.getAllArticleDto;
+import com.example.blog_kim_s_token.service.aritcle.model.tryUpdateArticleDto;
 import com.example.blog_kim_s_token.service.confrim.confrimService;
 import com.example.blog_kim_s_token.service.fileUpload.fileUploadService;
 import com.example.blog_kim_s_token.service.payment.paymentService;
@@ -265,6 +266,16 @@ public class restcontroller {
     public JSONObject getItem(HttpServletRequest request,HttpServletResponse response) {
         System.out.println("getItems");
         return productService.getItems(request);
+    }
+    @PostMapping("/api/getOnlyArticle")
+    public JSONObject getOnlyArticle(@RequestBody JSONObject jsonObject,HttpServletResponse response) {
+        System.out.println("getOnlyArticle");
+        return boardService.getArticle(Integer.parseInt(jsonObject.getAsString("bid")));
+    }
+    @PostMapping("/api/updateArticle")
+    public JSONObject updateArticle(@Valid @RequestBody tryUpdateArticleDto tryUpdateArticleDto,HttpServletResponse response) {
+        System.out.println("updateArticle");
+        return boardService.updateArticle(tryUpdateArticleDto);
     }
     @PostMapping("/api/v1/user/test")
     public JSONObject  user(HttpServletRequest request,HttpServletResponse response) {
