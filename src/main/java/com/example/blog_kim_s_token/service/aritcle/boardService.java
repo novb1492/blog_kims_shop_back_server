@@ -188,6 +188,9 @@ public class boardService {
             confrimUpdateArticle(articleDto.getBemail(),userDto.getEmail());
             articleDto.setTitle(tryUpdateArticleDto.getTitle());
             articleDto.setTextarea(tryUpdateArticleDto.getTextarea());
+            List<String>originImage=utillService.getImgSrc(articleDto.getTextarea());
+            List<String>newImages=utillService.getImgSrc(tryUpdateArticleDto.getTextarea());
+            compareImage(originImage, newImages);
             return utillService.makeJson(true, "글수정 성공");
         } catch (Exception e) {
             e.printStackTrace();
@@ -204,7 +207,7 @@ public class boardService {
             List<String>articleImages=utillService.getImgSrc(articleDto.getTextarea());
             deleteImages(articleImages);
             articleDao.delete(articleDto);
-            return utillService.makeJson(true, "글수정 성공");
+            return utillService.makeJson(true, "글삭제 성공");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("getArticle error"+e.getMessage());
@@ -217,13 +220,43 @@ public class boardService {
             System.out.println("이미지가 없는 게시글 삭제");
             return;
         }
-        String [] split=null;
         for(String s: articleImages){
-            split=s.split("/");
-            System.out.println(split[5]);
-            fileUploadService.deleteImage(split[5]);
+            reuqestDeleteImage(s);
         }
     }
+    private void compareImage(List<String>originImage,List<String>newImages) {
+        System.out.println("compareImage");
+        if(newImages.isEmpty()&&originImage.isEmpty()){
+            System.out.println("이미지가 원래/수정 없습니다");
+        }else if(newImages.isEmpty()&&!originImage.isEmpty()){
+            System.out.println("이미지가 모두 삭제되었습니다 ");
+            deleteImages(originImage);
+        }else{
+            System.out.println("이미지가 일부 변경 되었습니다");
+            int originSize=originImage.size();
+            int newSize=newImages.size();
+            for(int i=0;i<originSize;i++){
+                String ori=originImage.get(i);
+                for(int ii=0;ii<newSize;ii++){
+                    String newImg=newImages.get(ii);
+                    if(ori.equals(newImg)){
+                        System.out.println("이전사진 존재");
+                        break;
+                    }else if(ii==newSize-1&&!ori.equals(newImg)){
+                        System.out.println("삭제된 사진 발견");
+                        reuqestDeleteImage(originImage.get(i));
+                    }
+                }
+            }
+        }
+    }
+    private void reuqestDeleteImage(String imgPath) {
+        System.out.println("reuqestDeleteImage");
+        String [] split=imgPath.split("/");
+        System.out.println(split[5]);
+        fileUploadService.deleteImage(split[5]);
+    }
+    
     
 
 
