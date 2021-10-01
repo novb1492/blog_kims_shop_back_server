@@ -185,6 +185,16 @@ public class utillService {
 		}
 		return array;
 	}
+    public static void checkLength(String coment,int min,int max) {
+        System.out.println("checkLength");
+        int length=coment.length();
+        System.out.println(coment+" 글자수"+coment+" a");
+        if(length<min){
+            throw new RuntimeException("글자수가 너무 적습니다");
+        }else if(length>max){
+            throw new RuntimeException("글자수가 너무 많습니다");
+        }
+    }
     
 
 

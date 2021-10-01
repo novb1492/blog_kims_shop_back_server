@@ -27,4 +27,5 @@ public interface articleDao extends JpaRepository<articleDto,Integer> {
     @Query(value = "update article set bclicked=? where bid=?",nativeQuery = true)
     void plusClicked(int upClick,int bid);
 
+    int countByBid(int bid);
 }
