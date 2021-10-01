@@ -17,7 +17,7 @@ import com.example.blog_kim_s_token.service.utillService;
 import com.example.blog_kim_s_token.service.aritcle.model.getAllArticleDto;
 import com.example.blog_kim_s_token.service.aritcle.model.tryDeleteArticleDto;
 import com.example.blog_kim_s_token.service.aritcle.model.tryUpdateArticleDto;
-import com.example.blog_kim_s_token.service.fileUpload.aws.awsService;
+import com.example.blog_kim_s_token.service.fileUpload.fileUploadService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,7 +33,7 @@ public class boardService {
     @Autowired
     private userService userService;
     @Autowired
-    private awsService awsService;
+    private fileUploadService fileUploadService;
 
     public JSONObject insertArticle(insertArticleDto insertArticleDto) {
         System.out.println("insertArticle");
@@ -221,7 +221,7 @@ public class boardService {
         for(String s: articleImages){
             split=s.split("/");
             System.out.println(split[5]);
-            awsService.deleteImage(split[5]);
+            fileUploadService.deleteImage(split[5]);
         }
     }
     

@@ -7,6 +7,7 @@ import com.example.blog_kim_s_token.service.fileUpload.aws.awsService;
 import com.nimbusds.jose.shaded.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +16,10 @@ public class fileUploadService {
     private final String windowLocal="C:/Users/Administrator/Desktop/blog/blog_kim_s_shop/src/main/resources/static/image/";
     private final String serverImageUploadUrl="http://localhost:8080/static/image/";
     private final String awsS3Url="https://s3.ap-northeast-2.amazonaws.com/kimsshop/images/";
-    private final String  imageBucktetName="kimsshop/images";
+    @Value("${cloud.aws.credentials.imageBucktet}")
+    private  String  imageBucktetName;
+    @Value("${cloud.aws.credentials.fileBucktetName}")
+    private  String  fileBucktetName;
    
 
     JSONObject respone = new JSONObject();
@@ -49,6 +53,8 @@ public class fileUploadService {
             System.out.println(e.getMessage());
             throw new RuntimeException("사진업로드에 실패했습니다");
         }
-        
+    }
+    public void deleteImage(String fileName) {
+        awsService.deleteFile(imageBucktetName, fileName);
     }
 }
