@@ -186,11 +186,11 @@ public class boardService {
             articleDto articleDto=articleDao.findById(tryUpdateArticleDto.getBid()).orElseThrow(()->new IllegalArgumentException("존재하지 않는 게시글입니다"));
             userDto userDto=userService.sendUserDto();
             confrimUpdateArticle(articleDto.getBemail(),userDto.getEmail());
-            articleDto.setTitle(tryUpdateArticleDto.getTitle());
-            articleDto.setTextarea(tryUpdateArticleDto.getTextarea());
             List<String>originImage=utillService.getImgSrc(articleDto.getTextarea());
             List<String>newImages=utillService.getImgSrc(tryUpdateArticleDto.getTextarea());
             compareImage(originImage, newImages);
+            articleDto.setTitle(tryUpdateArticleDto.getTitle());
+            articleDto.setTextarea(tryUpdateArticleDto.getTextarea());
             return utillService.makeJson(true, "글수정 성공");
         } catch (Exception e) {
             e.printStackTrace();
@@ -239,12 +239,13 @@ public class boardService {
                 String ori=originImage.get(i);
                 for(int ii=0;ii<newSize;ii++){
                     String newImg=newImages.get(ii);
+                    System.out.println(i+" "+ii);
                     if(ori.equals(newImg)){
                         System.out.println("이전사진 존재");
                         break;
                     }else if(ii==newSize-1&&!ori.equals(newImg)){
                         System.out.println("삭제된 사진 발견");
-                        reuqestDeleteImage(originImage.get(i));
+                        reuqestDeleteImage(ori);
                     }
                 }
             }
