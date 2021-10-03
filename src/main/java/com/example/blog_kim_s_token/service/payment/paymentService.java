@@ -297,7 +297,7 @@ public class paymentService {
             }
             JSONObject jsonObject=new JSONObject();
             jsonObject.put("bool", true);
-            jsonObject.put("messege", "완료되었습니다");
+            jsonObject.put("message", "완료되었습니다");
             jsonObject.put("kind", kind);
             return jsonObject;
         } catch (Exception e) {

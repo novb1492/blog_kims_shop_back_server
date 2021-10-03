@@ -13,14 +13,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import com.nimbusds.jose.shaded.json.JSONObject;
 
 
 
 
+
 public class utillService {
-     
+    
     public static boolean checkDate(Timestamp timestamp,int refreshTokenValidity) {
         System.out.println(timestamp+"토큰 기간");
         System.out.println("날짜 비교 시작");
@@ -112,22 +112,22 @@ public class utillService {
         System.out.println("getNowTimestamp 현재 시간 가져오기");
         return new Timestamp(System.currentTimeMillis());
     }
-    public static JSONObject makeJson(boolean bool,String messege) {
+    public static JSONObject makeJson(boolean bool,String message) {
         JSONObject jsonObject=new JSONObject();
         jsonObject.put("bool",bool);
-        jsonObject.put("messege", messege);
+        jsonObject.put("message", message);
         return jsonObject;
     }
-    public static JSONObject makeJson(boolean bool,int messege) {
+    public static JSONObject makeJson(boolean bool,int message) {
         JSONObject jsonObject=new JSONObject();
         jsonObject.put("bool",bool);
-        jsonObject.put("messege", messege);
+        jsonObject.put("message", message);
         return jsonObject;
     }
-    public static JSONObject makeJson(boolean bool,String messege,List<String>list) {
+    public static JSONObject makeJson(boolean bool,String message,List<String>list) {
         JSONObject jsonObject=new JSONObject();
         jsonObject.put("bool",bool);
-        jsonObject.put("messege", messege);
+        jsonObject.put("message", message);
         jsonObject.put("errorPart",list);
         return jsonObject;
     }
@@ -195,7 +195,4 @@ public class utillService {
             throw new RuntimeException("글자수가 너무 많습니다");
         }
     }
-    
-
-
 }

@@ -32,11 +32,12 @@ import com.example.blog_kim_s_token.service.ApiServies.kakao.kakaoService;
 import com.example.blog_kim_s_token.service.ApiServies.kakao.tryKakaoPayDto;
 import com.example.blog_kim_s_token.service.ApiServies.naver.naverLoginService;
 import com.example.blog_kim_s_token.service.aritcle.boardService;
-import com.example.blog_kim_s_token.service.aritcle.comentService;
 import com.example.blog_kim_s_token.service.aritcle.model.getAllArticleDto;
 import com.example.blog_kim_s_token.service.aritcle.model.tryDeleteArticleDto;
 import com.example.blog_kim_s_token.service.aritcle.model.tryInsertComentDto;
 import com.example.blog_kim_s_token.service.aritcle.model.tryUpdateArticleDto;
+import com.example.blog_kim_s_token.service.aritcle.model.tryUpdateComentDto;
+import com.example.blog_kim_s_token.service.coment.service.comentService;
 import com.example.blog_kim_s_token.service.confrim.confrimService;
 import com.example.blog_kim_s_token.service.fileUpload.fileUploadService;
 import com.example.blog_kim_s_token.service.payment.paymentService;
@@ -290,6 +291,16 @@ public class restcontroller {
     public JSONObject insertComent(@Valid @RequestBody tryInsertComentDto tryInsertComentDto,HttpServletResponse response) {
         System.out.println("insertComent");
         return comentService.insertComent(tryInsertComentDto);
+    }
+    @PostMapping("/api/deleteComent")
+    public JSONObject deleteComent(@RequestBody JSONObject JSONObject,HttpServletResponse response) {
+        System.out.println("deleteComent");
+        return comentService.deleteComent(Integer.parseInt(JSONObject.getAsString("cid")));
+    }
+    @PostMapping("/api/updateComent")
+    public JSONObject updateComent(@RequestBody tryUpdateComentDto tryUpdateComentDto,HttpServletResponse response) {
+        System.out.println("deleteComent");
+        return comentService.updateComent(tryUpdateComentDto);
     }
     @PostMapping("/api/v1/user/test")
     public JSONObject  user(HttpServletRequest request,HttpServletResponse response) {

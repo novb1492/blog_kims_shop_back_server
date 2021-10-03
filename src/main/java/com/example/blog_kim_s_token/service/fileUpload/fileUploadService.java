@@ -1,6 +1,7 @@
 package com.example.blog_kim_s_token.service.fileUpload;
 
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
 
 import com.example.blog_kim_s_token.service.fileUpload.aws.awsService;
@@ -56,5 +57,48 @@ public class fileUploadService {
     }
     public void deleteImage(String fileName) {
         awsService.deleteFile(imageBucktetName, fileName);
+    }
+    public void CompareImgs(List<String>originImage,List<String>newImages) {
+        System.out.println("CompareImgs");
+        if(newImages.isEmpty()&&originImage.isEmpty()){
+            System.out.println("이미지가 원래/수정 없습니다");
+        }else if(newImages.isEmpty()&&!originImage.isEmpty()){
+            System.out.println("이미지가 모두 삭제되었습니다 ");
+            deleteImages(originImage);
+        }else{
+            System.out.println("이미지가 일부 변경 되었습니다");
+            int originSize=originImage.size();
+            int newSize=newImages.size();
+            for(int i=0;i<originSize;i++){
+                String ori=originImage.get(i);
+                for(int ii=0;ii<newSize;ii++){
+                    String newImg=newImages.get(ii);
+                    System.out.println(i+" "+ii);
+                    if(ori.equals(newImg)){
+                        System.out.println("이전사진 존재");
+                        break;
+                    }else if(ii==newSize-1&&!ori.equals(newImg)){
+                        System.out.println("삭제된 사진 발견");
+                        reuqestDeleteImage(ori);
+                    }
+                }
+            }
+        }    
+    }
+    private void reuqestDeleteImage(String imgPath) {
+        System.out.println("reuqestDeleteImage");
+        String [] split=imgPath.split("/");
+        System.out.println(split[5]);
+        deleteImage(split[5]);
+    }
+    public void deleteImages(List<String>articleImages) {
+        System.out.println("deleteImages");
+        if(articleImages.isEmpty()){
+            System.out.println("이미지가 없는 댓글/게시글 삭제");
+            return;
+        }
+        for(String s: articleImages){
+            reuqestDeleteImage(s);
+        }
     }
 }
