@@ -299,13 +299,18 @@ public class restcontroller {
     }
     @PostMapping("/api/updateComent")
     public JSONObject updateComent(@Valid @RequestBody tryUpdateComentDto tryUpdateComentDto,HttpServletResponse response) {
-        System.out.println("deleteComent");
+        System.out.println("updateComent");
         return comentService.updateComent(tryUpdateComentDto);
     }
     @PostMapping("/auth/getComent")
     public JSONObject getComent(@Valid @RequestBody getArticleDto getArticleDto,HttpServletResponse response) {
         System.out.println("getComent");
         return comentService.getComent(getArticleDto);
+    }
+    @PostMapping("/api/cancleArticle")
+    public void cancleArticle(@RequestBody JSONObject jsonObject,HttpServletResponse response) {
+        System.out.println("cancleArticle");
+        boardService.cancleArticle(jsonObject);
     }
     @PostMapping("/api/v1/user/test")
     public JSONObject  user(HttpServletRequest request,HttpServletResponse response) {

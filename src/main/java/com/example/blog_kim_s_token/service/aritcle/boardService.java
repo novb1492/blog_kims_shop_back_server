@@ -209,6 +209,11 @@ public class boardService {
             throw new RuntimeException(e.getMessage());
         }
     }
+    public void cancleArticle(JSONObject jsonObject) {
+        System.out.println("cancleArticle");
+        List<String>imgs=utillService.getImgSrc((String)jsonObject.get("text"));
+        fileUploadService.deleteImages(imgs);
+    }
     
     
 
