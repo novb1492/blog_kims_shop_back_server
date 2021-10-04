@@ -99,9 +99,11 @@ public class comentService {
         System.out.println("getComent");
         try {
             int bid=getArticleDto.getBid();
-            int first=utillService.getFirst(getArticleDto.getPage(), pagesize);
-            List<getComentInter>getComentInters=comentDao.findByBidNative(bid, bid, first, pagesize).orElseThrow(()->new IllegalArgumentException("존재하지 않는 글입니다"));
+            int nowPage=getArticleDto.getPage();
+            int first=utillService.getFirst(nowPage, pagesize);
+            List<getComentInter>getComentInters=comentDao.findByBidNative(bid, bid, first-1, pagesize).orElseThrow(()->new IllegalArgumentException("존재하지 않는 글입니다"));
             int totalPage=utillService.getTotalpages(getComentInters.get(0).getTotalcount(), pagesize);
+            utillService.comparePage(nowPage, totalPage);
             List<JSONObject>coments=new ArrayList<>();
             for(getComentInter g:getComentInters){
                 JSONObject coment=new JSONObject();

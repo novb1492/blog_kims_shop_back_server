@@ -197,4 +197,10 @@ public class utillService {
             throw new RuntimeException("글자수가 너무 많습니다");
         }
     }
+    public static void comparePage(int now,int total) {
+        System.out.println("comparePage");
+        if(now>total){
+            throw new RuntimeException("현재페이지가 전체페이지 보다 큽니다");
+        }
+    }
 }
