@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class tempPaidConfig {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
-    private final String batchName="clearTemp";
+    private final String batchName="clearTemp2";
 
     
     @Autowired

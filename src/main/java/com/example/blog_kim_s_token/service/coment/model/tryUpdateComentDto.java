@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class tryUpdateComentDto {
 
     @NotBlank(message = "댓글이 빈칸입니다")
-    @Length(min = 1,max = 100,message = "글자수가 너무 많거나 적습니다")
+    @Length(min = 1,max = 300,message = "글자수가 너무 많거나 적습니다")
     private String coment;
 
     private int cid;

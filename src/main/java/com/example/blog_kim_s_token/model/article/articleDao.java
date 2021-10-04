@@ -24,6 +24,11 @@ public interface articleDao extends JpaRepository<articleDto,Integer> {
 
     @Modifying
     @Transactional
+    @Query(value = "delete a.*,c.* from article a left join coment c on c.cbid=a.bid where a.bid=?",nativeQuery = true)
+    void deleteArticleJoinComent(int bid);
+
+    @Modifying
+    @Transactional
     @Query(value = "update article set bclicked=? where bid=?",nativeQuery = true)
     void plusClicked(int upClick,int bid);
 

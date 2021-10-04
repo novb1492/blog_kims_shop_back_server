@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class vbankConfig {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
-    private final String batchName="checkNonePaidVbank3";
+    private final String batchName="checkNonePaidVbank4";
 
     @Autowired
     private vbankDao vbankDao;

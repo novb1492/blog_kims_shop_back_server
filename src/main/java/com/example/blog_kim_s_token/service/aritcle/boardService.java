@@ -195,12 +195,13 @@ public class boardService {
     public JSONObject deleteArticle(tryDeleteArticleDto tryDeleteArticleDto) {
         System.out.println("deleteArticle");
         try {
-            articleDto articleDto=articleDao.findById(tryDeleteArticleDto.getBid()).orElseThrow(()->new IllegalArgumentException("존재하지 않는 게시글입니다"));
+            int bid=tryDeleteArticleDto.getBid();
+            articleDto articleDto=articleDao.findById(bid).orElseThrow(()->new IllegalArgumentException("존재하지 않는 게시글입니다"));
             userDto userDto=userService.sendUserDto();
             confrimUpdateArticle(articleDto.getBemail(),userDto.getEmail());
             List<String>articleImages=utillService.getImgSrc(articleDto.getTextarea());
             fileUploadService.deleteImages(articleImages);
-            articleDao.delete(articleDto);
+            articleDao.deleteArticleJoinComent(bid);
             return utillService.makeJson(true, "글삭제 성공");
         } catch (Exception e) {
             e.printStackTrace();
