@@ -154,6 +154,8 @@ public class utillService {
         return totalpage;
     }
     public static int getFirst(int page,int pagesize) {
+        System.out.println("getFirst");
+        System.out.println("요청페이지 :"+page);
         return (page-1)*pagesize+1;
     }
     public static int getEnd(int fisrt,int pagesize) {

@@ -34,9 +34,9 @@ import com.example.blog_kim_s_token.service.ApiServies.naver.naverLoginService;
 import com.example.blog_kim_s_token.service.aritcle.boardService;
 import com.example.blog_kim_s_token.service.aritcle.model.getAllArticleDto;
 import com.example.blog_kim_s_token.service.aritcle.model.tryDeleteArticleDto;
-import com.example.blog_kim_s_token.service.aritcle.model.tryInsertComentDto;
 import com.example.blog_kim_s_token.service.aritcle.model.tryUpdateArticleDto;
-import com.example.blog_kim_s_token.service.aritcle.model.tryUpdateComentDto;
+import com.example.blog_kim_s_token.service.coment.model.tryInsertComentDto;
+import com.example.blog_kim_s_token.service.coment.model.tryUpdateComentDto;
 import com.example.blog_kim_s_token.service.coment.service.comentService;
 import com.example.blog_kim_s_token.service.confrim.confrimService;
 import com.example.blog_kim_s_token.service.fileUpload.fileUploadService;
@@ -298,9 +298,14 @@ public class restcontroller {
         return comentService.deleteComent(Integer.parseInt(JSONObject.getAsString("cid")));
     }
     @PostMapping("/api/updateComent")
-    public JSONObject updateComent(@RequestBody tryUpdateComentDto tryUpdateComentDto,HttpServletResponse response) {
+    public JSONObject updateComent(@Valid @RequestBody tryUpdateComentDto tryUpdateComentDto,HttpServletResponse response) {
         System.out.println("deleteComent");
         return comentService.updateComent(tryUpdateComentDto);
+    }
+    @PostMapping("/auth/getComent")
+    public JSONObject getComent(@Valid @RequestBody getArticleDto getArticleDto,HttpServletResponse response) {
+        System.out.println("getComent");
+        return comentService.getComent(getArticleDto);
     }
     @PostMapping("/api/v1/user/test")
     public JSONObject  user(HttpServletRequest request,HttpServletResponse response) {

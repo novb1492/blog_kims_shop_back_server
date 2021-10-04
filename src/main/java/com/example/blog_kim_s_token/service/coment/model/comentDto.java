@@ -41,4 +41,5 @@ public class comentDto {
     @Column(name="c_created")
     @CreationTimestamp
     private Timestamp c_created;
+
 }

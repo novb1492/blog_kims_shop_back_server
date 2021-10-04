@@ -96,6 +96,7 @@ public class boardService {
             response.put("article", article);
             response.put("coments", coments);
             response.put("totalPage", totalPage);
+            response.put("nowPage", 1);
             return response;
         } catch (Exception e) {
             e.printStackTrace();
