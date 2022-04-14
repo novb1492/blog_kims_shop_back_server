@@ -39,12 +39,12 @@ public class security extends WebSecurityConfigurerAdapter {
     @Autowired
     private csrfTokenService csrfTokenService;
   
- 
-    @Bean
-    @Override
-    protected AuthenticationManager authenticationManager() throws Exception {
-        return super.authenticationManager();
-    }
+ @Bean
+ @Override
+ public AuthenticationManager authenticationManagerBean() throws Exception {
+     // TODO Auto-generated method stub
+     return super.authenticationManagerBean();
+ }
     @Bean
     public BCryptPasswordEncoder pwdEncoder() {
        return  new BCryptPasswordEncoder();
